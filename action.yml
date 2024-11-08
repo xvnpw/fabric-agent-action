@@ -1,27 +1,35 @@
 # action.yml
 name: 'Fabric Agent Action'
-description: 'Agent wrapper over Daniel Miessler Fabric'
+description: 'Github action that utilize fabric as agent to perform action with LLMs'
 author: 'xvnpw'
 branding:
   icon: 'book-open'
   color: 'green'
 inputs:
-  provider:
-    description: 'provider name'
-    required: false
-    default: 'openai'
   input_file:
     description: 'path to input file'
     required: true
   output_file:
     description: 'path to output file'
     required: true
-  model:
-    description: 'type of LLM model' # e.g. gpt-3.5-turbo, anthropic/claude-2
+  agent_provider:
+    description: 'agent provider name'
+    required: false
+    default: 'openai'
+  agent_model:
+    description: 'agent model' # e.g. gpt-3.5-turbo, anthropic/claude-2
     required: false
     default: 'gpt-4o'
-  temperature:
-    description: 'sampling temperature for a model'
+  agent_temperature:
+    description: 'agent sampling temperature for a model'
+    required: false
+    default: 0
+  fabric_model:
+    description: 'fabric model' # e.g. gpt-3.5-turbo, anthropic/claude-2
+    required: false
+    default: 'gpt-4o'
+  fabric_temperature:
+    description: 'agent sampling temperature for a model'
     required: false
     default: 0
   verbose:
@@ -38,8 +46,10 @@ runs:
   args:
     - ${{ inputs.input_file }}
     - ${{ inputs.output_file }}
-    - ${{ inputs.provider }}
-    - ${{ inputs.model }}
-    - ${{ inputs.temperature }}
     - ${{ inputs.verbose }}
     - ${{ inputs.debug }}
+    - ${{ inputs.agent_provider }}
+    - ${{ inputs.agent_model }}
+    - ${{ inputs.agent_temperature }}
+    - ${{ inputs.fabric_model }}
+    - ${{ inputs.fabric_temperature }}

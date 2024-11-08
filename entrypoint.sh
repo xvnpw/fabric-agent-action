@@ -8,4 +8,14 @@ cp -r /root/.config $HOME/
 
 echo "[start] app.py..."
 
-/usr/local/bin/python /app/fabric_agent_action/app.py -f /app/fabric -i $1 -o $2
+ARGS="-f /app/fabric -i $1 -o $2"
+
+if $3 = 'true'; then
+    ARGS="$ARGS --verbose"
+fi
+
+if $4 = 'true'; then
+    ARGS="$ARGS --debug"
+fi
+
+/usr/local/bin/python /app/fabric_agent_action/app.py $ARGS

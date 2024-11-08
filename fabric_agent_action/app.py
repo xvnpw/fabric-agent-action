@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+import logging
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph import MessagesState
 from langgraph.prebuilt import ToolNode
@@ -11,6 +12,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from fabric_agent_action import constants
 from fabric_tools import FabricTools
 
+logger = logging.getLogger(__name__)
+
 
 openai_api_key = os.environ.get(constants.OPENAI_API_KEY)
 if not openai_api_key:
@@ -20,6 +23,12 @@ if not openai_api_key:
 
 def main():
     args = parse_arguments()
+
+    if args.verbose is True:
+        logging.basicConfig(level=logging.INFO)
+
+    if args.debug is True:
+        logging.basicConfig(level=logging.DEBUG)
 
     try:
         if args.input_file:
@@ -37,6 +46,8 @@ def main():
 
 
 def parse_arguments() -> argparse.Namespace:
+    logger.debug("setting up parser...")
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-i",
@@ -55,10 +66,26 @@ def parse_arguments() -> argparse.Namespace:
         default=sys.stdout,
         help="Output file (default is stdout)",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="turn on verbose messages, default: false",
+        default="false",
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="turn on debug messages, default: false",
+        default="false",
+    )
     return parser.parse_args()
 
 
 def build_graph(fabricTools):
+    logger.debug("building graph...")
+
     llm = ChatOpenAI(model="gpt-4o", temperature=0)
     llm_with_tools = llm.bind_tools(fabricTools.get_fabric_tools())
 
@@ -84,12 +111,19 @@ def build_graph(fabricTools):
 
 
 def invoke(graph, input_str, output_file):
+    logger.debug("invoking graph...")
+
     input_messages = [HumanMessage(content=input_str)]
 
     messagesState = graph.invoke({"messages": input_messages})
 
+    logger.debug("graph invoked")
+
     for m in messagesState["messages"]:
-        output_file.write(m.pretty_repr() + "\n")
+        logger.debug("message: " + m.pretty_repr())
+
+    last_message = messagesState["messages"][-1]
+    output_file.write(last_message.content)
 
 
 if __name__ == "__main__":
