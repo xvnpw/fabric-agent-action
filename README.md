@@ -4,5 +4,24 @@
 
 🤖 Github action that utilize [fabric](https://github.com/danielmiessler/fabric) as agent to perform action with LLMs
 
-## Design
+## Inputs
 
+### `input_file`
+
+**Required** The path to input file that will be passed to fabric.
+
+### `output_file`
+
+**Required** The path to output file. Output from fabric will written to that file.
+
+## Outputs
+
+## Example usage
+
+```yml
+uses: xvnpw/ai-threat-modeling-action@v0.0.1
+with:
+  input_file: '...'
+  output_file: '...'
+
+```
