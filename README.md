@@ -19,7 +19,7 @@
 ## Example usage
 
 ```yml
-uses: xvnpw/ai-threat-modeling-action@v0.0.1
+uses: xvnpw/fabric-agent-action@v0.0.1
 with:
   input_file: '...'
   output_file: '...'

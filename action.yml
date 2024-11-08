@@ -1,6 +1,6 @@
 # action.yml
 name: 'Fabric Agent Action'
-description: 'Agent wrapper over Daniel Miessler's Fabric'
+description: 'Agent wrapper over Daniel Miessler Fabric'
 author: 'xvnpw'
 branding:
   icon: 'book-open'
