@@ -1,0 +1,45 @@
+# action.yml
+name: 'Fabric Agent Action'
+description: 'Agent wrapper over Daniel Miessler's Fabric'
+author: 'xvnpw'
+branding:
+  icon: 'book-open'
+  color: 'green'
+inputs:
+  provider:
+    description: 'provider name'
+    required: false
+    default: 'openai'
+  input_file:
+    description: 'path to input file'
+    required: true
+  output_file:
+    description: 'path to output file'
+    required: true
+  model:
+    description: 'type of LLM model' # e.g. gpt-3.5-turbo, anthropic/claude-2
+    required: false
+    default: 'gpt-4o'
+  temperature:
+    description: 'sampling temperature for a model'
+    required: false
+    default: 0
+  verbose:
+    description: 'verbose messages'
+    required: false
+    default: false
+  debug:
+    description: 'debug messages'
+    required: false
+    default: false
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.input_file }}
+    - ${{ inputs.output_file }}
+    - ${{ inputs.provider }}
+    - ${{ inputs.model }}
+    - ${{ inputs.temperature }}
+    - ${{ inputs.verbose }}
+    - ${{ inputs.debug }}
