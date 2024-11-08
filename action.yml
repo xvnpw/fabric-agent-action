@@ -29,7 +29,7 @@ inputs:
     required: false
     default: 'gpt-4o'
   fabric_temperature:
-    description: 'agent sampling temperature for a model'
+    description: 'fabric sampling temperature for a model'
     required: false
     default: 0
   verbose:
