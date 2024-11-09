@@ -6,8 +6,6 @@
 
 ## Usage
 
-### Inputs
-
 ### Action inputs
 
 | Name | Description | Default |
