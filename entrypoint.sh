@@ -9,17 +9,17 @@ if [ -n "$GITHUB_WORKSPACE" ]; then
     cp -r /root/.config $HOME/
 fi
 
-if [ -n "$INPUT_FILE" -a -n "$OUTPUT_FILE" ]; then
-    ARGS="-f /app/fabric -i $INPUT_FILE -o $OUTPUT_FILE"
+if [ -n "$INPUT_INPUT_FILE" -a -n "$INPUT_OUTPUT_FILE" ]; then
+    ARGS="-f /app/fabric -i $INPUT_INPUT_FILE -o $INPUT_OUTPUT_FILE"
 else
     ARGS="-h"
 fi
 
-if [ "$VERBOSE" = 'true' ]; then
+if [ "$INPUT_VERBOSE" = 'true' ]; then
     ARGS="$ARGS --verbose"
 fi
 
-if [ "$DEBUG" = 'true' ]; then
+if [ "$INPUT_DEBUG" = 'true' ]; then
     ARGS="$ARGS --debug"
 fi
 
