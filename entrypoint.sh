@@ -4,17 +4,24 @@
 export PYTHONPATH="/app:$PYTHONPATH"
 
 # copying fabric configuration to temporary $HOME set by github workflow
-cp -r /root/.config $HOME/
+if [ ! -z "$GITHUB_WORKSPACE" ]; then
+    echo "Detected GitHub runner"
+    cp -r /root/.config $HOME/
+fi
 
 echo "[start] app.py..."
 
-ARGS="-f /app/fabric -i $1 -o $2"
+if [ "$#" -lt 2 ]; then
+    ARGS="-h"
+else
+    ARGS="-f /app/fabric -i $1 -o $2"
+fi
 
-if $3 = 'true'; then
+if [ "$3" = 'true' ]; then
     ARGS="$ARGS --verbose"
 fi
 
-if $4 = 'true'; then
+if [ "$4" = 'true' ]; then
     ARGS="$ARGS --debug"
 fi
 

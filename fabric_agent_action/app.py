@@ -15,14 +15,13 @@ from fabric_tools import FabricTools
 logger = logging.getLogger(__name__)
 
 
-openai_api_key = os.environ.get(constants.OPENAI_API_KEY)
-if not openai_api_key:
-    print(f"{constants.OPENAI_API_KEY} not set in env")
-    sys.exit(1)
-
-
 def main():
     args = parse_arguments()
+
+    openai_api_key = os.environ.get(constants.OPENAI_API_KEY)
+    if not openai_api_key:
+        print(f"{constants.OPENAI_API_KEY} not set in env")
+        sys.exit(1)
 
     if args.verbose is True:
         logging.basicConfig(level=logging.INFO)

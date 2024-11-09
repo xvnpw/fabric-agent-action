@@ -23,6 +23,8 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-      - name: Test docker build
+      - name: Test docker
         run: |
           docker build . -t test-fabric-agent-action
+
+          docker run test-fabric-agent-action
