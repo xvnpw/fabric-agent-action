@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
 
-🤖 Github action that utilize [fabric](https://github.com/danielmiessler/fabric) as agent to perform action with LLMs
+🤖 Github action that utilize [fabric](https://github.com/danielmiessler/fabric) as agent to perform action with LLMs.
 
 ## Usage
 
@@ -37,7 +37,8 @@ on:
 jobs:
   fabric_agent_action:
     name: Run fabric-agent-action on issue comment
-    if: contains(github.event.comment.body, '/fabric') && ${{ !github.event.issue.pull_request }}
+    # only comments startsWith /fabric are triggering agent run
+    if: startsWith(github.event.comment.body, '/fabric') && !github.event.issue.pull_request
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -46,6 +47,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      # github-script is used to:
+      # 1. fetch issue body and comment body
+      # 2. write comment body to fabric_input.md file
+      # 3. write issue body to fabric_input.md file
       - uses: actions/github-script@v7
         id: read-issue-and-comment-script
         with:
@@ -81,6 +86,7 @@ jobs:
           output_file: "fabric_output.md"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # create-or-update-comment is used to save output from agent back to original issue
       - name: Add comment
         uses: peter-evans/create-or-update-comment@v4
         with:
