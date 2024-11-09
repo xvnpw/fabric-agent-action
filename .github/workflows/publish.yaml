@@ -1,9 +1,10 @@
 name: Publish docker image to ghcr registry
 
 on:
-  push:
-    tags:
-      - 'v*'        # This will match tags like v1.0, v2.3.4, etc.
+  workflow_run:
+    workflows: ["Test and Build"]
+    types:
+      - completed
 
 env:
   REGISTRY: ghcr.io
@@ -12,6 +13,7 @@ env:
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
   build-and-push-image:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
