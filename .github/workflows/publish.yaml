@@ -2,7 +2,7 @@ name: Publish docker image to ghcr registry
 
 on:
   workflow_run:
-    workflows: ["Test and Build"]
+    workflows: ["CI"]
     types:
       - completed
 
