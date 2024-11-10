@@ -172,7 +172,7 @@ def main() -> None:
         agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
         graph = agent_builder.build()
 
-        invoke_graph(graph, input_str, config.output_file)
+        invoke_graph(graph, config, input_str, config.output_file)
 
         logger.info("Fabric Agent Action completed successfully")
 
@@ -188,7 +188,7 @@ def main() -> None:
                 config.output_file.close()
 
 
-def invoke_graph(graph, input_str: str, output_file: TextIO) -> None:
+def invoke_graph(graph, config, input_str: str, output_file: TextIO) -> None:
     logger.debug("Invoking graph...")
 
     try:
@@ -201,7 +201,10 @@ def invoke_graph(graph, input_str: str, output_file: TextIO) -> None:
             logger.debug(f"Message: {msg.pretty_repr()}")
 
         last_message = messages_state["messages"][-1]
-        output_file.write(last_message.content)
+
+        content = f"# (AI Generated, provider: {config.fabric_provider}, model: {config.fabric_model})\n\n{last_message.content}"
+
+        output_file.write(content)
 
     except Exception as e:
         logger.error(f"Error during graph execution: {e}")
