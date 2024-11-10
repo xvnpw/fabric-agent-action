@@ -8,49 +8,61 @@ logger = logging.getLogger(__name__)
 
 
 class FabricTools:
-    def __init__(self, llm: BaseChatModel, use_system_message=True):
+    """Manages fabric patterns and their execution"""
+
+    def __init__(self, llm: BaseChatModel, use_system_message: bool = True):
         self.llm = llm
         self.use_system_message = use_system_message
+        self._patterns_cache: dict[str, str] = {}
 
     def read_fabric_pattern(self, pattern_name: str) -> str:
-        # Construct the path to the file relative to the script location
+        """Read and cache fabric pattern content"""
+        if pattern_name in self._patterns_cache:
+            return self._patterns_cache[pattern_name]
 
         root_project_dir = Path(__file__).resolve().parent.parent
-        logger.debug(
-            f"looking for patterns starting with project root directory: {root_project_dir}"
-        )
-
         patterns_folder = root_project_dir / "prompts/fabric_patterns"
-
-        logger.debug(f"looking for fabric pattern in: {patterns_folder}")
-
         file_path = patterns_folder / pattern_name / "system.md"
 
-        logger.debug(f"reading {pattern_name} from {file_path}...")
+        logger.debug(f"Reading fabric pattern from: {file_path}")
 
-        with open(file_path, "r") as file:
-            content = file.read()
-        return content
+        try:
+            with open(file_path, "r") as file:
+                content = file.read()
+            self._patterns_cache[pattern_name] = content
+            return content
+        except FileNotFoundError:
+            logger.error(f"Pattern file not found: {file_path}")
+            raise
+        except Exception as e:
+            logger.error(f"Error reading pattern file: {e}")
+            raise
 
     def invoke_llm(self, input: str, pattern_name: str) -> str:
-        fabric_pattern = self.read_fabric_pattern(pattern_name)
+        """Invoke LLM with proper error handling"""
+        try:
+            fabric_pattern = self.read_fabric_pattern(pattern_name)
 
-        logger.debug(
-            f"invoking llm with system message={self.use_system_message}, fabric pattern={pattern_name}, and input={input[:20]}..."
-        )
-
-        if self.use_system_message:
-            message = self.llm.invoke(
-                [SystemMessage(content=fabric_pattern)] + [HumanMessage(content=input)]
-            )
-        else:
-            message = self.llm.invoke(
-                [HumanMessage(content=fabric_pattern)] + [HumanMessage(content=input)]
+            logger.debug(
+                f"Invoking LLM with pattern={pattern_name}, "
+                f"system_message={self.use_system_message}, "
+                f"input_preview={input[:50]}..."
             )
 
-        logger.debug(f"got result from llm={message.content[:20]}...")
+            message_class = SystemMessage if self.use_system_message else HumanMessage
+            messages = [
+                message_class(content=fabric_pattern),
+                HumanMessage(content=input),
+            ]
 
-        return message.content
+            response = self.llm.invoke(messages)
+
+            logger.debug(f"LLM response preview: {response.content[:50]}...")
+            return response.content
+
+        except Exception as e:
+            logger.error(f"Error invoking LLM: {e}")
+            raise
 
     def improve_writing(self, input: str):
         """Improves writing of input text using fabric pattern

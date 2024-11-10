@@ -3,10 +3,22 @@ import logging
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
-
+from fabric_agent_action.fabric_tools import FabricTools
 from fabric_agent_action.llms import LLMProvider
 
 logger = logging.getLogger(__name__)
+
+
+class BaseAgent:
+    """Base class for all agents"""
+
+    def __init__(self, llm_provider: LLMProvider, fabric_tools: FabricTools):
+        self.llm_provider = llm_provider
+        self.fabric_tools = fabric_tools
+
+    def build_graph(self) -> StateGraph:
+        """Build and return the agent's graph"""
+        raise NotImplementedError
 
 
 class AgentBuilder:
@@ -15,16 +27,18 @@ class AgentBuilder:
         self.llm_provider = llm_provider
         self.fabric_tools = fabric_tools
 
-    def build(self):
-        if self.agent_type == "single_command":
-            return SingleCommandAgent(
-                self.llm_provider, self.fabric_tools
-            ).build_graph()
-        elif self.agent_type == "react":
-            return ReActAgent().build_graph()
+        self._agents = {"single_command": SingleCommandAgent, "react": ReActAgent}
+
+    def build(self) -> StateGraph:
+        """Build and return appropriate agent type"""
+        agent_class = self._agents.get(self.agent_type)
+        if not agent_class:
+            raise ValueError(f"Unknown agent type: {self.agent_type}")
+
+        return agent_class(self.llm_provider, self.fabric_tools).build_graph()
 
 
-class SingleCommandAgent:
+class SingleCommandAgent(BaseAgent):
     def __init__(self, llm_provider: LLMProvider, fabric_tools):
         self.llm_provider = llm_provider
         self.fabric_tools = fabric_tools
@@ -66,6 +80,6 @@ class SingleCommandAgent:
         return graph
 
 
-class ReActAgent:
+class ReActAgent(BaseAgent):
     def build_graph(self):
         raise NotImplementedError()

@@ -1,6 +1,8 @@
 import argparse
 import logging
 import sys
+from dataclasses import dataclass
+from typing import TextIO
 
 from langchain_core.messages import HumanMessage
 
@@ -11,129 +13,199 @@ from fabric_agent_action.llms import LLMProvider
 logger = logging.getLogger(__name__)
 
 
-def main():
-    args = parse_arguments()
+@dataclass
+class AppConfig:
+    """Configuration class to hold application settings"""
 
-    if args.verbose is True:
-        logging.basicConfig(level=logging.INFO)
+    input_file: TextIO
+    output_file: TextIO
+    verbose: bool
+    debug: bool
+    agent_provider: str
+    agent_model: str
+    agent_temperature: float
+    fabric_provider: str
+    fabric_model: str
+    fabric_temperature: float
+    agent_type: str
 
-    if args.debug is True:
-        logging.basicConfig(level=logging.DEBUG)
 
+def setup_logging(verbose: bool, debug: bool) -> None:
+    """Configure logging based on verbosity levels"""
+    if debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
+    elif verbose:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
+    else:
+        logging.basicConfig(level=logging.WARNING)
+
+
+def read_input(input_file: TextIO) -> str:
+    """Read input from file or stdin with proper error handling"""
     try:
-        if args.input_file:
-            input_str = args.input_file.read()
-        else:
-            input_str = sys.stdin.read()
+        return input_file.read()
     except (KeyboardInterrupt, EOFError):
-        print("\nNo input provided. Exiting.")
-        return
-
-    llm_provider = LLMProvider(args)
-
-    fabric_llm, use_system_message = llm_provider.createFabricLLM()
-    fabric_tools = FabricTools(fabric_llm, use_system_message)
-
-    agent_builder = AgentBuilder(args.agent_type, llm_provider, fabric_tools)
-
-    graph = agent_builder.build()
-    invoke(graph, input_str, args.output_file)
+        logger.error("Input reading interrupted")
+        raise SystemExit("No input provided. Exiting.")
+    except Exception as e:
+        logger.error(f"Error reading input: {e}")
+        raise
 
 
-def parse_arguments() -> argparse.Namespace:
-    logger.debug("setting up parser...")
+def parse_arguments() -> AppConfig:
+    """Parse command line arguments and return AppConfig"""
+    logger.debug("Setting up argument parser...")
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
+    parser = argparse.ArgumentParser(description="Fabric Agent Action CLI")
+
+    # Input/Output arguments
+    io_group = parser.add_argument_group("Input/Output Options")
+    io_group.add_argument(
         "-i",
         "--input-file",
         type=argparse.FileType("r"),
         default=sys.stdin,
-        help="Input file (default is stdin)",
+        help="Input file (default: stdin)",
     )
-    parser.add_argument(
+    io_group.add_argument(
         "-o",
         "--output-file",
         type=argparse.FileType("w"),
         default=sys.stdout,
-        help="Output file (default is stdout)",
+        help="Output file (default: stdout)",
     )
-    parser.add_argument(
+
+    # Logging arguments
+    log_group = parser.add_argument_group("Logging Options")
+    log_group.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="turn on verbose messages, default: false",
-        default="false",
+        help="Enable verbose logging",
     )
-    parser.add_argument(
+    log_group.add_argument(
         "-d",
         "--debug",
         action="store_true",
-        help="turn on debug messages, default: false",
-        default="false",
+        help="Enable debug logging",
     )
-    parser.add_argument(
+
+    # Agent configuration
+    agent_group = parser.add_argument_group("Agent Configuration")
+    agent_group.add_argument(
         "--agent-provider",
         type=str,
         choices=["openai", "openrouter"],
-        help="name of LLM provider for agent, default: openai",
         default="openai",
+        help="LLM provider for agent (default: openai)",
     )
-    parser.add_argument(
+    agent_group.add_argument(
         "--agent-model",
         type=str,
-        help="name model for agent, default: gpt-4o",
         default="gpt-4o",
+        help="Model name for agent (default: gpt-4o)",
     )
-    parser.add_argument(
+    agent_group.add_argument(
         "--agent-temperature",
         type=float,
-        help="sampling temperature for agent model, default 0",
         default=0,
+        help="Sampling temperature for agent model (default: 0)",
     )
-    parser.add_argument(
+
+    # Fabric configuration
+    fabric_group = parser.add_argument_group("Fabric Configuration")
+    fabric_group.add_argument(
         "--fabric-provider",
         type=str,
         choices=["openai", "openrouter"],
-        help="name of LLM provider for fabric, default: openai",
         default="openai",
+        help="LLM provider for fabric (default: openai)",
     )
-    parser.add_argument(
+    fabric_group.add_argument(
         "--fabric-model",
         type=str,
-        help="name model for fabric, default: gpt-4o",
         default="gpt-4o",
+        help="Model name for fabric (default: gpt-4o)",
     )
-    parser.add_argument(
+    fabric_group.add_argument(
         "--fabric-temperature",
         type=float,
-        help="sampling temperature for fabric model, default 0",
         default=0,
+        help="Sampling temperature for fabric model (default: 0)",
     )
+
+    # Agent type
     parser.add_argument(
         "--agent-type",
         type=str,
         choices=["single_command", "react"],
-        help="type of agent, default: single_command",
         default="single_command",
+        help="Type of agent (default: single_command)",
     )
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    config = AppConfig(**vars(args))
+
+    return config
 
 
-def invoke(graph, input_str, output_file):
-    logger.debug("invoking graph...")
+def main() -> None:
+    try:
+        config = parse_arguments()
+        setup_logging(config.verbose, config.debug)
 
-    input_messages = [HumanMessage(content=input_str)]
+        logger.info("Starting Fabric Agent Action")
 
-    messagesState = graph.invoke({"messages": input_messages})
+        input_str = read_input(config.input_file)
 
-    logger.debug("graph invoked")
+        llm_provider = LLMProvider(config)
+        fabric_llm, use_system_message = llm_provider.createFabricLLM()
+        fabric_tools = FabricTools(fabric_llm, use_system_message)
 
-    for m in messagesState["messages"]:
-        logger.debug("message: " + m.pretty_repr())
+        agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
+        graph = agent_builder.build()
 
-    last_message = messagesState["messages"][-1]
-    output_file.write(last_message.content)
+        invoke_graph(graph, input_str, config.output_file)
+
+        logger.info("Fabric Agent Action completed successfully")
+
+    except Exception as e:
+        logger.error(f"Application error: {e}")
+        sys.exit(1)
+    finally:
+        # Ensure files are properly closed
+        if "config" in locals():
+            if config.input_file and config.input_file is not sys.stdin:
+                config.input_file.close()
+            if config.output_file and config.output_file is not sys.stdout:
+                config.output_file.close()
+
+
+def invoke_graph(graph, input_str: str, output_file: TextIO) -> None:
+    logger.debug("Invoking graph...")
+
+    try:
+        input_messages = [HumanMessage(content=input_str)]
+        messages_state = graph.invoke({"messages": input_messages})
+
+        logger.debug("Graph execution completed")
+
+        for msg in messages_state["messages"]:
+            logger.debug(f"Message: {msg.pretty_repr()}")
+
+        last_message = messages_state["messages"][-1]
+        output_file.write(last_message.content)
+
+    except Exception as e:
+        logger.error(f"Error during graph execution: {e}")
+        raise
 
 
 if __name__ == "__main__":
