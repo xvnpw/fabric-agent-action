@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
 
-🤖 Github action that utilize [fabric](https://github.com/danielmiessler/fabric) as agent to perform action with LLMs.
+🤖 Github action that utilize [fabric patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) in agent fashion. Agents are implemented using [langgraph](https://www.langchain.com/langgraph).
 
 ## Usage
 
@@ -14,11 +14,13 @@
 | `output_file` | **Required** The path to output file. Output from fabric will written to that file. | |
 | `verbose` | Verbose messages (python logging set to INFO). | false |
 | `debug` | Debug messages (python logging set to DEBUG). | false |
-| `agent_provider` | **NOT IMPLEMENTED** | |
-| `agent_model` | **NOT IMPLEMENTED** | |
-| `agent_temperature` | **NOT IMPLEMENTED** | |
-| `fabric_model` | **NOT IMPLEMENTED** | |
-| `fabric_temperature` | **NOT IMPLEMENTED** | |
+| `agent_type` | Type of agent, one of: single_command, react | single_command |
+| `agent_provider` | Name of LLM provider for agent, one of: openai, openrouter | openai |
+| `agent_model` | Name model for agent | gpt-4o |
+| `agent_temperature` | Sampling temperature for agent model | 0 |
+| `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter | openai |
+| `fabric_model` | Name model for fabric | gpt-4o |
+| `fabric_temperature` | Sampling temperature for fabric model | 0 |
 
 ## Example usage
 

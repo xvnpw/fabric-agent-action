@@ -1,6 +1,6 @@
 # action.yml
 name: 'Fabric Agent Action'
-description: 'Github action that utilize fabric as agent to perform action with LLMs'
+description: 'Github action that utilize fabric patterns in agent fashion'
 author: 'xvnpw'
 branding:
   icon: 'book-open'
@@ -12,6 +12,10 @@ inputs:
   output_file:
     description: 'path to output file'
     required: true
+  agent_type:
+    description: 'type of agent, one of single_command, react'
+    required: false
+    default: 'single_command' 
   agent_provider:
     description: 'agent provider name'
     required: false
@@ -24,6 +28,10 @@ inputs:
     description: 'agent sampling temperature for a model'
     required: false
     default: 0
+  fabric_provider:
+    description: 'fabric provider name'
+    required: false
+    default: 'openai'
   fabric_model:
     description: 'fabric model' # e.g. gpt-3.5-turbo, anthropic/claude-2
     required: false
@@ -48,8 +56,10 @@ runs:
     - ${{ inputs.output_file }}
     - ${{ inputs.verbose }}
     - ${{ inputs.debug }}
+    - ${{ inputs.agent_type }}
     - ${{ inputs.agent_provider }}
     - ${{ inputs.agent_model }}
     - ${{ inputs.agent_temperature }}
+    - ${{ inputs.fabric_provider }}
     - ${{ inputs.fabric_model }}
     - ${{ inputs.fabric_temperature }}

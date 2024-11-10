@@ -1,27 +1,18 @@
 import argparse
-import sys
-import os
 import logging
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph import MessagesState
-from langgraph.prebuilt import ToolNode
-from langgraph.prebuilt import tools_condition
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
+import sys
 
-from fabric_agent_action import constants
-from fabric_tools import FabricTools
+from langchain_core.messages import HumanMessage
+
+from fabric_agent_action.agents import AgentBuilder
+from fabric_agent_action.fabric_tools import FabricTools
+from fabric_agent_action.llms import LLMProvider
 
 logger = logging.getLogger(__name__)
 
 
 def main():
     args = parse_arguments()
-
-    openai_api_key = os.environ.get(constants.OPENAI_API_KEY)
-    if not openai_api_key:
-        print(f"{constants.OPENAI_API_KEY} not set in env")
-        sys.exit(1)
 
     if args.verbose is True:
         logging.basicConfig(level=logging.INFO)
@@ -38,9 +29,14 @@ def main():
         print("\nNo input provided. Exiting.")
         return
 
-    fabricTools = FabricTools(cmdPath=args.fabric_path)
+    llm_provider = LLMProvider(args)
 
-    graph = build_graph(fabricTools)
+    fabric_llm, use_system_message = llm_provider.createFabricLLM()
+    fabric_tools = FabricTools(fabric_llm, use_system_message)
+
+    agent_builder = AgentBuilder(args.agent_type, llm_provider, fabric_tools)
+
+    graph = agent_builder.build()
     invoke(graph, input_str, args.output_file)
 
 
@@ -54,9 +50,6 @@ def parse_arguments() -> argparse.Namespace:
         type=argparse.FileType("r"),
         default=sys.stdin,
         help="Input file (default is stdin)",
-    )
-    parser.add_argument(
-        "-f", "--fabric-path", type=str, default="fabric", help="Path to fabric binary"
     )
     parser.add_argument(
         "-o",
@@ -79,34 +72,52 @@ def parse_arguments() -> argparse.Namespace:
         help="turn on debug messages, default: false",
         default="false",
     )
-    return parser.parse_args()
-
-
-def build_graph(fabricTools):
-    logger.debug("building graph...")
-
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
-    llm_with_tools = llm.bind_tools(fabricTools.get_fabric_tools())
-
-    sys_msg = SystemMessage(
-        content="""You are a fabric assistant, that is tasked to run actions using fabric tools on given input. 
-        
-        I will send you input and you should pick right fabric tool for my request. If you are unable to decide on fabric pattern return "no fabric pattern for this request" and finish.
-        """
+    parser.add_argument(
+        "--agent-provider",
+        type=str,
+        choices=["openai", "openrouter"],
+        help="name of LLM provider for agent, default: openai",
+        default="openai",
     )
-
-    def assistant(state):
-        return {"messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]}
-
-    builder = StateGraph(MessagesState)
-    builder.add_node("assistant", assistant)
-    builder.add_node("tools", ToolNode(fabricTools.get_fabric_tools()))
-    builder.add_edge(START, "assistant")
-    builder.add_conditional_edges("assistant", tools_condition)
-    builder.add_edge("tools", END)
-    graph = builder.compile()
-
-    return graph
+    parser.add_argument(
+        "--agent-model",
+        type=str,
+        help="name model for agent, default: gpt-4o",
+        default="gpt-4o",
+    )
+    parser.add_argument(
+        "--agent-temperature",
+        type=float,
+        help="sampling temperature for agent model, default 0",
+        default=0,
+    )
+    parser.add_argument(
+        "--fabric-provider",
+        type=str,
+        choices=["openai", "openrouter"],
+        help="name of LLM provider for fabric, default: openai",
+        default="openai",
+    )
+    parser.add_argument(
+        "--fabric-model",
+        type=str,
+        help="name model for fabric, default: gpt-4o",
+        default="gpt-4o",
+    )
+    parser.add_argument(
+        "--fabric-temperature",
+        type=float,
+        help="sampling temperature for fabric model, default 0",
+        default=0,
+    )
+    parser.add_argument(
+        "--agent-type",
+        type=str,
+        choices=["single_command", "react"],
+        help="type of agent, default: single_command",
+        default="single_command",
+    )
+    return parser.parse_args()
 
 
 def invoke(graph, input_str, output_file):

@@ -1,14 +1,9 @@
 FROM python:3.11
 
-ENV FABRIC_VERSION=v1.4.94
-
 WORKDIR /app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN wget -q -O fabric "https://github.com/danielmiessler/fabric/releases/download/${FABRIC_VERSION}/fabric-linux-amd64" && \
-    chmod +x fabric && ./fabric && ./fabric -U
 
 # using .dockeringore 
 COPY . .
