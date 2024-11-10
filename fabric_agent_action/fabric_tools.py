@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from pathlib import Path
 
 from langchain_core.language_models.chat_models import BaseChatModel
