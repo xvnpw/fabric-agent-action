@@ -81,8 +81,8 @@ jobs:
                 console.log('Data written to file');
             });
             return JSON.stringify(fabric_input);
-      - name: Generate user story security acceptance criteria
-        uses:  docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.11
+      - name: Run fabric agent action
+        uses:  docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.13
         with:
           input_file: "fabric_input.md"
           output_file: "fabric_output.md"
