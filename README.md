@@ -22,6 +22,15 @@
 | `fabric_model` | Name model for fabric | gpt-4o |
 | `fabric_temperature` | Sampling temperature for fabric model | 0 |
 
+### Environment variables
+
+| Name | Description | Default |
+| --- | --- | --- |
+| OPENAI_API_KEY | OpenAI API Key | |
+| OPENROUTER_API_KEY | OpenRouter API Key | |
+
+One of api keys needs to be defined.
+
 ## Example usage
 
 Action is not yet implementing getting issue body and comment(s) from GitHub. For that I'm using `actions/github-script`. For writing comment back to original issue I'm using `peter-evans/create-or-update-comment`. Condition `if: contains(github.event.comment.body, '/fabric')` is making sure that workflow is run only when referencing `/fabric`.
@@ -95,3 +104,9 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body-path: ${{ github.workspace }}/fabric_output.md
 ```
+
+## LLM Providers
+
+Currently supporting:
+- [OpenAI](https://platform.openai.com/)
+- [OpenRouter](https://openrouter.ai/)
