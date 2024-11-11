@@ -10,11 +10,11 @@
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `input_file` | **Required** The path to input file that will be passed to fabric. | |
-| `output_file` | **Required** The path to output file. Output from fabric will be written to that file. | |
+| `input_file` | **Required** The path to input file containing e.g. issue body and request to agent. See [agent types](#agent-types) section below and [example](#example-usage) | |
+| `output_file` | **Required** The path to output file. Output from running fabric pattern will be written to that file. | |
 | `verbose` | Verbose messages (python logging set to INFO). | false |
 | `debug` | Debug messages (python logging set to DEBUG). | false |
-| `agent_type` | Type of agent, one of: single_command, react | single_command |
+| `agent_type` | Type of agent, one of: single_command, react. See [agent types](#agent-types) section below. | single_command |
 | `agent_provider` | Name of LLM provider for agent, one of: openai, openrouter, anthropic | openai |
 | `agent_model` | Name of model for agent | gpt-4o |
 | `agent_temperature` | Sampling temperature for agent model | 0 |
@@ -114,9 +114,23 @@ jobs:
 
 ## Agent types
 
+Agent decides what fabric pattern to pick. If there is not matching patterns it will return "no fabric pattern for this request" and finish.
+
 ### `single_command`
 
 `single_command` is a simple agent that executes one tool and returns output.
+
+**input_file** content. In [example](#example-usage) above input file has value: `commentBody + "\n\n" + "GitHub issue:\n" + issueBody;`.
+
+Example:
+
+```markdown
+/fabric improve writing
+
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+
+I developed several prompts to assist with the challenging task of creating design documents. I implemented these as Fabric patterns for everyone's benefit. If you're unfamiliar with Fabric - it's an excellent CLI tool created by Daniel Miessler.
+```
 
 ### `react`
 
