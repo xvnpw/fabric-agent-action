@@ -21,8 +21,10 @@
 | `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter, anthropic | openai |
 | `fabric_model` | Name model for fabric | gpt-4o |
 | `fabric_temperature` | Sampling temperature for fabric model | 0 |
-| `fabric-tools-included` | Comma separated list of fabric tools to include in agent |
+| `fabric-tools-included` | Comma separated list of fabric tools to include in agent. **Important**: you have to use this argument (or `fabric-tools-excluded`) in case of `gpt-4o` model - it support only 128 tools. Fabric has as of Nov 2024, 175 tools |
 | `fabric-tools-excluded` | Comma separated list of fabric tools to exclude in agent |
+
+`fabric-tools-included` / `fabric-tools-excluded` - have to be used for model like `gpt-4o`. If you want to use all available patterns in fabric, consider `claude-3-5-sonnet-20240620` from Anthropic.
 
 ### Environment variables
 
@@ -94,10 +96,12 @@ jobs:
             });
             return JSON.stringify(fabric_input);
       - name: Run fabric agent action
-        uses:  docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.13
+        uses:  docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.15
         with:
           input_file: "fabric_input.md"
           output_file: "fabric_output.md"
+          agent_model: "gpt-4o" # default model, IMPORTANT - gpt-4o is only supporting 128 patterns - you need to use fabric_tools_included/fabric_tools_excluded 
+          fabric_tools_included: "clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing"
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       # create-or-update-comment is used to save output from agent back to original issue
@@ -107,6 +111,16 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body-path: ${{ github.workspace }}/fabric_output.md
 ```
+
+## Agent types
+
+### `single_command`
+
+This is simple agent that is executing one tool and returning output.
+
+### `react`
+
+Not implemented
 
 ## LLM Providers
 

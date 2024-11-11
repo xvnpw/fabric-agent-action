@@ -40,6 +40,12 @@ inputs:
     description: 'fabric sampling temperature for a model'
     required: false
     default: 0
+  fabric_tools_included:
+    description: 'Comma separated list of fabric tools to include in agent' # e.g. create_quiz,improve_writing
+    required: false
+  fabric_tools_excluded:
+    description: 'Comma separated list of fabric tools to exclude in agent'
+    required: false
   verbose:
     description: 'verbose messages'
     required: false

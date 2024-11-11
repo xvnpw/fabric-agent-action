@@ -42,6 +42,14 @@ if [ -n "$INPUT_FABRIC_TEMPERATURE" ]; then
     ARGS="$ARGS --fabric-temperature $INPUT_FABRIC_TEMPERATURE"
 fi
 
+if [ -n "$INPUT_FABRIC_TOOLS_INCLUDED" ]; then
+    ARGS="$ARGS --fabric-tools-included $INPUT_FABRIC_TOOLS_INCLUDED"
+fi
+
+if [ -n "$INPUT_FABRIC_TOOLS_EXCLUDED" ]; then
+    ARGS="$ARGS --fabric-tools-excluded $INPUT_FABRIC_TOOLS_EXCLUDED"
+fi
+
 if [ "$INPUT_VERBOSE" = 'true' ]; then
     ARGS="$ARGS --verbose"
 fi
