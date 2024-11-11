@@ -7,12 +7,51 @@ from langchain_core.messages import HumanMessage, SystemMessage
 logger = logging.getLogger(__name__)
 
 
+class FabricToolsFilter:
+    def __init__(self, included: str = None, excluded: str = None):
+        self.included = self._split_string(included)
+        self.excluded = self._split_string(excluded)
+
+    def _split_string(self, input_str: str):
+        if input_str:
+            try:
+                return [item.strip() for item in input_str.split(",")]
+            except (AttributeError, TypeError):
+                # Handle cases where input_str is None or not a string
+                return []
+        else:
+            return []
+
+    def get_fabric_tools_list(self, fabric_tools: list):
+        if self.included:
+            included_tools = [
+                tool for tool in fabric_tools if tool.__name__ in self.included
+            ]
+            return included_tools
+        elif self.excluded:
+            excluded_tools = [
+                tool for tool in fabric_tools if tool.__name__ not in self.excluded
+            ]
+            return excluded_tools
+        else:
+            return fabric_tools
+
+
 class FabricTools:
     """Manages fabric patterns and their execution"""
 
-    def __init__(self, llm: BaseChatModel, use_system_message: bool = True):
+    def __init__(
+        self,
+        llm: BaseChatModel,
+        use_system_message: bool = True,
+        number_of_tools: int = 128,
+        included_tools: str = None,
+        excluded_tools: str = None,
+    ):
         self.llm = llm
         self.use_system_message = use_system_message
+        self.number_of_tools = number_of_tools
+        self.tools_filter = FabricToolsFilter(included_tools, excluded_tools)
         self._patterns_cache: dict[str, str] = {}
 
     def read_fabric_pattern(self, pattern_name: str) -> str:
@@ -1465,6 +1504,16 @@ class FabricTools:
         return self.invoke_llm(input, "write_semgrep_rule")
 
     def get_fabric_tools(self) -> list:
+        filtered_tools = self.tools_filter.get_fabric_tools_list(
+            self._get_fabric_tools()
+        )
+        if len(filtered_tools) > self.number_of_tools:
+            raise ValueError(
+                f"Model supporting only {self.number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-tools-include/--fabric-tools-exclude or different model."
+            )
+        return filtered_tools
+
+    def _get_fabric_tools(self) -> list:
         return [
             self.agility_story,
             self.ai,

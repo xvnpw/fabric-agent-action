@@ -207,3 +207,19 @@ def test_invoke_llm(llm):
         "create quiz for me about hammer", "create_quiz"
     )
     assert "create quiz for me about hammer" in fabric_output
+
+
+@pytest.mark.parametrize(
+    "included,excluded,tools_count",
+    [
+        ("create_stride_threat_model", "", 1),
+        ("", "", 175),
+        ("", "create_stride_threat_model", 174),
+    ],
+)
+def test_fabric_tools_filter(llm, included, excluded, tools_count):
+    fabric_tools = FabricTools(
+        llm, number_of_tools=1000, included_tools=included, excluded_tools=excluded
+    )
+    tools = fabric_tools.get_fabric_tools()
+    assert len(tools) == tools_count

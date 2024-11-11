@@ -46,10 +46,10 @@ class SingleCommandAgent(BaseAgent):
     def build_graph(self):
         logger.debug("[single-command-agent] building graph...")
 
-        llm, use_system_message = self.llm_provider.createAgentLLM()
-        llm_with_tools = llm.bind_tools(self.fabric_tools.get_fabric_tools())
+        llm = self.llm_provider.createAgentLLM()
+        llm_with_tools = llm.llm.bind_tools(self.fabric_tools.get_fabric_tools())
 
-        if use_system_message:
+        if llm.use_system_message:
             agent_msg = SystemMessage(
                 content="""You are a fabric assistant, that is tasked to run actions using fabric tools on given input. 
                 

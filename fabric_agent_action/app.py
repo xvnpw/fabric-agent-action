@@ -28,8 +28,8 @@ class AppConfig:
     fabric_model: str
     fabric_temperature: float
     agent_type: str
-    fabric_tools_include: list[str]
-    fabric_tools_exclude: list[str]
+    fabric_tools_include: str
+    fabric_tools_exclude: str
 
 
 def setup_logging(verbose: bool, debug: bool) -> None:
@@ -119,6 +119,13 @@ def parse_arguments() -> AppConfig:
         default=0,
         help="Sampling temperature for agent model (default: 0)",
     )
+    agent_group.add_argument(
+        "--agent-type",
+        type=str,
+        choices=["single_command", "react"],
+        default="single_command",
+        help="Type of agent (default: single_command)",
+    )
 
     # Fabric configuration
     fabric_group = parser.add_argument_group("Fabric Configuration")
@@ -143,22 +150,13 @@ def parse_arguments() -> AppConfig:
     )
     fabric_group.add_argument(
         "--fabric-tools-include",
-        type=list,
+        type=str,
         help="Comma separated list of fabric tools to include in agent",
     )
     fabric_group.add_argument(
         "--fabric-tools-exclude",
-        type=list,
-        help="Comma separated list of fabric tools to exclude in agent",
-    )
-
-    # Agent type
-    parser.add_argument(
-        "--agent-type",
         type=str,
-        choices=["single_command", "react"],
-        default="single_command",
-        help="Type of agent (default: single_command)",
+        help="Comma separated list of fabric tools to exclude in agent",
     )
 
     args = parser.parse_args()
@@ -178,8 +176,14 @@ def main() -> None:
         input_str = read_input(config.input_file)
 
         llm_provider = LLMProvider(config)
-        fabric_llm, use_system_message = llm_provider.createFabricLLM()
-        fabric_tools = FabricTools(fabric_llm, use_system_message)
+        fabric_llm = llm_provider.createFabricLLM()
+        fabric_tools = FabricTools(
+            fabric_llm.llm,
+            fabric_llm.use_system_message,
+            fabric_llm.number_of_tools,
+            config.fabric_tools_include,
+            config.fabric_tools_exclude,
+        )
 
         agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
         graph = agent_builder.build()

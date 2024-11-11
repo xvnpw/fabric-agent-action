@@ -16,6 +16,13 @@ ProviderType = Literal["openrouter", "openai", "anthropic"]
 
 
 @dataclass
+class LLM:
+    llm: BaseChatModel
+    use_system_message: bool
+    number_of_tools: int
+
+
+@dataclass
 class LLMConfig:
     provider: ProviderType
     model: str
@@ -42,8 +49,16 @@ class LLMProvider:
                 "class": ChatAnthropic,
             },
         }
+        self._model_configs = {
+            "gpt-4o": {"max_number_of_tools": 128, "use_system_message": True},
+            "o1-preview": {"max_number_of_tools": 256, "use_system_message": False},
+        }
+        self._default_model_config = {
+            "max_number_of_tools": None,
+            "use_system_message": True,
+        }
 
-    def _get_llm_instance(self, llm_config: LLMConfig) -> tuple[BaseChatModel, bool]:
+    def _get_llm_instance(self, llm_config: LLMConfig) -> LLM:
         """
         Create an LLM instance based on the provided configuration.
         Returns a tuple of (LLM instance, use_system_message flag)
@@ -58,13 +73,11 @@ class LLMProvider:
             print(f"{provider_config['env_key']} not set in env")
             sys.exit(1)
 
-        # Determine if system messages should be used
-        use_system_message = "o1-preview" not in llm_config.model
+        model_config = self._model_configs[llm_config.model]
+        if not model_config:
+            model_config = self._default_model_config
 
-        if not use_system_message:
-            logger.debug(
-                f"[{llm_config.provider}] use system message disabled for model: {llm_config.model}"
-            )
+        logger.debug(f"[{llm_config.provider}] model config: {model_config}")
 
         # Log configuration
         logger.debug(
@@ -82,9 +95,13 @@ class LLMProvider:
         if provider_config["api_base"]:
             kwargs["openai_api_base"] = provider_config["api_base"]
 
-        return provider_config["class"](**kwargs), use_system_message
+        return LLM(
+            llm=provider_config["class"](**kwargs),
+            use_system_message=model_config["use_system_message"],
+            number_of_tools=model_config["max_number_of_tools"],
+        )
 
-    def createAgentLLM(self) -> tuple[BaseChatModel, bool]:
+    def createAgentLLM(self) -> LLM:
         return self._get_llm_instance(
             LLMConfig(
                 provider=self.config.agent_provider,
@@ -93,7 +110,7 @@ class LLMProvider:
             )
         )
 
-    def createFabricLLM(self) -> tuple[BaseChatModel, bool]:
+    def createFabricLLM(self) -> LLM:
         return self._get_llm_instance(
             LLMConfig(
                 provider=self.config.fabric_provider,
