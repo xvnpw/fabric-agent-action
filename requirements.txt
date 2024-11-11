@@ -5,4 +5,5 @@ langsmith
 langchain-community
 langchain-core
 langchain-openai
+langchain-anthropic
 six

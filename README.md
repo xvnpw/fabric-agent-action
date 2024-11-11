@@ -15,10 +15,10 @@
 | `verbose` | Verbose messages (python logging set to INFO). | false |
 | `debug` | Debug messages (python logging set to DEBUG). | false |
 | `agent_type` | Type of agent, one of: single_command, react | single_command |
-| `agent_provider` | Name of LLM provider for agent, one of: openai, openrouter | openai |
+| `agent_provider` | Name of LLM provider for agent, one of: openai, openrouter, anthropic | openai |
 | `agent_model` | Name model for agent | gpt-4o |
 | `agent_temperature` | Sampling temperature for agent model | 0 |
-| `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter | openai |
+| `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter, anthropic | openai |
 | `fabric_model` | Name model for fabric | gpt-4o |
 | `fabric_temperature` | Sampling temperature for fabric model | 0 |
 
@@ -28,6 +28,7 @@
 | --- | --- | --- |
 | OPENAI_API_KEY | OpenAI API Key | |
 | OPENROUTER_API_KEY | OpenRouter API Key | |
+| ANTHROPIC_API_KEY | Anthropic API Key | |
 
 One of api keys needs to be defined.
 
@@ -110,3 +111,4 @@ jobs:
 Currently supporting:
 - [OpenAI](https://platform.openai.com/)
 - [OpenRouter](https://openrouter.ai/)
+- [Anthropic](https://anthropic.com/)

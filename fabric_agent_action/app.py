@@ -28,6 +28,8 @@ class AppConfig:
     fabric_model: str
     fabric_temperature: float
     agent_type: str
+    fabric_tools_include: list[str]
+    fabric_tools_exclude: list[str]
 
 
 def setup_logging(verbose: bool, debug: bool) -> None:
@@ -101,7 +103,7 @@ def parse_arguments() -> AppConfig:
     agent_group.add_argument(
         "--agent-provider",
         type=str,
-        choices=["openai", "openrouter"],
+        choices=["openai", "openrouter", "anthropic"],
         default="openai",
         help="LLM provider for agent (default: openai)",
     )
@@ -123,7 +125,7 @@ def parse_arguments() -> AppConfig:
     fabric_group.add_argument(
         "--fabric-provider",
         type=str,
-        choices=["openai", "openrouter"],
+        choices=["openai", "openrouter", "anthropic"],
         default="openai",
         help="LLM provider for fabric (default: openai)",
     )
@@ -138,6 +140,16 @@ def parse_arguments() -> AppConfig:
         type=float,
         default=0,
         help="Sampling temperature for fabric model (default: 0)",
+    )
+    fabric_group.add_argument(
+        "--fabric-tools-include",
+        type=list,
+        help="Comma separated list of fabric tools to include in agent",
+    )
+    fabric_group.add_argument(
+        "--fabric-tools-exclude",
+        type=list,
+        help="Comma separated list of fabric tools to exclude in agent",
     )
 
     # Agent type
