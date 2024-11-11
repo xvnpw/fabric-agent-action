@@ -10,21 +10,21 @@
 
 | Name | Description | Default |
 | --- | --- | --- |
-| `input_file` | **Required** The path to input file containing e.g. issue body and request to agent. See [agent types](#agent-types) section below and [example](#example-usage) | |
-| `output_file` | **Required** The path to output file. Output from running fabric pattern will be written to that file. | |
-| `verbose` | Verbose messages (python logging set to INFO). | false |
-| `debug` | Debug messages (python logging set to DEBUG). | false |
-| `agent_type` | Type of agent, one of: single_command, react. See [agent types](#agent-types) section below. | single_command |
-| `agent_provider` | Name of LLM provider for agent, one of: openai, openrouter, anthropic | openai |
-| `agent_model` | Name of model for agent | gpt-4o |
+| `input_file` | **Required** Path to input file containing issue body and request to agent. See [agent types](#agent-types) section below and [example](#example-usage) | |
+| `output_file` | **Required** Path to output file where fabric pattern results will be written | |
+| `verbose` | Enable verbose messages (python logging set to INFO) | false |
+| `debug` | Enable debug messages (python logging set to DEBUG) | false |
+| `agent_type` | Type of agent: single_command or react. See [agent types](#agent-types) section | single_command |
+| `agent_provider` | LLM provider for agent: openai, openrouter, or anthropic | openai |
+| `agent_model` | Model name for agent | gpt-4o |
 | `agent_temperature` | Sampling temperature for agent model | 0 |
-| `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter, anthropic | openai |
-| `fabric_model` | Name of model for fabric | gpt-4o |
+| `fabric_provider` | LLM provider for fabric: openai, openrouter, or anthropic | openai |
+| `fabric_model` | Model name for fabric | gpt-4o |
 | `fabric_temperature` | Sampling temperature for fabric model | 0 |
-| `fabric-tools-included` | Comma-separated list of fabric patterns to include in agent. **Important**: you must use this argument (or `fabric-tools-excluded`) for `gpt-4o` model - it supports only 128 tools. Fabric has, as of Nov 2024, 175 patterns |
-| `fabric-tools-excluded` | Comma-separated list of fabric patterns to exclude in agent |
+| `fabric-tools-included` | Comma-separated list of fabric patterns to include. **Important**: Required for `gpt-4o` model which supports only 128 tools (Fabric has 175 patterns as of Nov 2024) | |
+| `fabric-tools-excluded` | Comma-separated list of fabric patterns to exclude | |
 
-`fabric-tools-included` / `fabric-tools-excluded` - must be used for models like `gpt-4o`. If you want to use all available patterns in fabric, consider `claude-3-5-sonnet-20240620` from Anthropic. Each fabric pattern is transformed into a tool and sent as part of the request to LLM.
+Use either `fabric-tools-included` or `fabric-tools-excluded` for models like `gpt-4o`. For access to all patterns, consider using `claude-3-5-sonnet-20240620` from Anthropic. Each fabric pattern becomes a tool in the LLM request.
 
 ### Environment variables
 
@@ -34,13 +34,13 @@
 | OPENROUTER_API_KEY | OpenRouter API Key | |
 | ANTHROPIC_API_KEY | Anthropic API Key | |
 
-One of the API keys needs to be defined.
+One API key must be provided.
 
 ## Example usage
 
-The action is not yet implementing getting issue body and comment(s) from GitHub. For that, I'm using `actions/github-script`. For writing comments back to the original issue, I'm using `peter-evans/create-or-update-comment`. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
+This action doesn't yet implement direct GitHub issue body and comment retrieval. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for responding. The workflow triggers only when comments contain `/fabric`.
 
-In the following example, I'm referencing the action in the GHCR docker registry to avoid building the docker container each time the action runs. You can also reference the action using `uses: xvnpw/fabric-agent-action@vx.y.z`.
+The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
 
 ```yml
 name: Run fabric-agent-action on issue comment
@@ -114,13 +114,13 @@ jobs:
 
 ## Agent types
 
-Agent decides what fabric pattern to pick. If there is not matching patterns it will return "no fabric pattern for this request" and finish.
+Agents select appropriate fabric patterns. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
 
 ### `single_command`
 
-`single_command` is a simple agent that executes one tool and returns output.
+`single_command` executes one pattern and returns its output.
 
-**input_file** content. In [example](#example-usage) above input file has value: `commentBody + "\n\n" + "GitHub issue:\n" + issueBody;`.
+**input_file** content example from [above](#example-usage): `commentBody + "\n\n" + "GitHub issue:\n" + issueBody;`
 
 Example:
 
@@ -138,7 +138,7 @@ Not implemented
 
 ## LLM Providers
 
-Currently supporting:
+Supported providers:
 - [OpenAI](https://platform.openai.com/)
 - [OpenRouter](https://openrouter.ai/)
 - [Anthropic](https://www.anthropic.com/)
