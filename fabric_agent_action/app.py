@@ -218,7 +218,7 @@ def invoke_graph(graph, config, input_str: str, output_file: TextIO) -> None:
 
         last_message = messages_state["messages"][-1]
 
-        content = f"# (AI Generated, provider: {config.fabric_provider}, model: {config.fabric_model})\n\n{last_message.content}"
+        content = f"##### (🤖 AI Generated, agent model: {config.agent_model}, fabric model: {config.fabric_model})\n\n{last_message.content}"
 
         output_file.write(content)
 

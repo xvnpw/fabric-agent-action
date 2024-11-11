@@ -51,7 +51,10 @@ class LLMProvider:
         }
         self._model_configs = {
             "gpt-4o": {"max_number_of_tools": 128, "use_system_message": True},
-            "o1-preview": {"max_number_of_tools": 256, "use_system_message": False},
+            "openai/o1-preview": {
+                "max_number_of_tools": 256,
+                "use_system_message": False,
+            },
         }
         self._default_model_config = {
             "max_number_of_tools": None,
@@ -59,10 +62,6 @@ class LLMProvider:
         }
 
     def _get_llm_instance(self, llm_config: LLMConfig) -> LLM:
-        """
-        Create an LLM instance based on the provided configuration.
-        Returns a tuple of (LLM instance, use_system_message flag)
-        """
         provider_config = self._provider_configs.get(llm_config.provider)
         if not provider_config:
             raise ValueError(f"Unsupported provider: {llm_config.provider}")
@@ -73,8 +72,9 @@ class LLMProvider:
             print(f"{provider_config['env_key']} not set in env")
             sys.exit(1)
 
-        model_config = self._model_configs[llm_config.model]
-        if not model_config:
+        if llm_config.model in self._model_configs:
+            model_config = self._model_configs[llm_config.model]
+        else:
             model_config = self._default_model_config
 
         logger.debug(f"[{llm_config.provider}] model config: {model_config}")
