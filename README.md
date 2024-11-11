@@ -96,7 +96,7 @@ jobs:
             });
             return JSON.stringify(fabric_input);
       - name: Run fabric agent action
-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.15
+        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.17
         with:
           input_file: "fabric_input.md"
           output_file: "fabric_output.md"
