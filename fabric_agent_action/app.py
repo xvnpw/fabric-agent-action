@@ -28,8 +28,8 @@ class AppConfig:
     fabric_model: str
     fabric_temperature: float
     agent_type: str
-    fabric_tools_include: str
-    fabric_tools_exclude: str
+    fabric_tools_included: str
+    fabric_tools_excluded: str
 
 
 def setup_logging(verbose: bool, debug: bool) -> None:
@@ -149,12 +149,12 @@ def parse_arguments() -> AppConfig:
         help="Sampling temperature for fabric model (default: 0)",
     )
     fabric_group.add_argument(
-        "--fabric-tools-include",
+        "--fabric-tools-included",
         type=str,
         help="Comma separated list of fabric tools to include in agent",
     )
     fabric_group.add_argument(
-        "--fabric-tools-exclude",
+        "--fabric-tools-excluded",
         type=str,
         help="Comma separated list of fabric tools to exclude in agent",
     )
@@ -181,8 +181,8 @@ def main() -> None:
             fabric_llm.llm,
             fabric_llm.use_system_message,
             fabric_llm.number_of_tools,
-            config.fabric_tools_include,
-            config.fabric_tools_exclude,
+            config.fabric_tools_included,
+            config.fabric_tools_excluded,
         )
 
         agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)

@@ -21,6 +21,8 @@
 | `fabric_provider` | Name of LLM provider for fabric, one of: openai, openrouter, anthropic | openai |
 | `fabric_model` | Name model for fabric | gpt-4o |
 | `fabric_temperature` | Sampling temperature for fabric model | 0 |
+| `fabric-tools-included` | Comma separated list of fabric tools to include in agent |
+| `fabric-tools-excluded` | Comma separated list of fabric tools to exclude in agent |
 
 ### Environment variables
 
