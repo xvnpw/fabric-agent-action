@@ -38,7 +38,7 @@ One API key must be provided.
 
 ## Example usage
 
-This action doesn't yet implement direct GitHub issue body and comment retrieval. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for responding. The workflow triggers only when comments contain `/fabric`.
+This action doesn't yet implement direct GitHub issue body and comment retrieval. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
 
 The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
 
