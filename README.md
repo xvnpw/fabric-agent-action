@@ -18,7 +18,7 @@
 
 | Input | Description | Default |
 |-------|-------------|---------|
-| `input_file` | **Required** Source file containing issue body and agent instructions | |
+| `input_file` | **Required** Source file containing input and agent instructions | |
 | `output_file` | **Required** Destination file for pattern results | |
 | `verbose` | Enable INFO level logging | `false` |
 | `debug` | Enable DEBUG level logging | `false` |
@@ -43,7 +43,7 @@ Set one of the following API keys:
 
 ## Usage Example
 
-This action doesn't yet implement direct GitHub issue body and comment retrieval. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
+This action is flexible on workflow integration. Can be used on issues, push, etc. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
 
 The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
 
@@ -97,7 +97,7 @@ jobs:
             return input;
 
       - name: Execute Fabric Patterns
-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.17
+        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.18
         with:
           input_file: fabric_input.md
           output_file: fabric_output.md
@@ -145,7 +145,14 @@ Example Input:
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
 ```
 
-### react
+Example Output:
+```markdown
+##### (🤖 AI Generated, agent model: gpt-4o, fabric model: gpt-4o)
+
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results.
+```
+
+### ReAct
 
 *Coming soon*
 
