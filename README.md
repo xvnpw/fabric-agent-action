@@ -10,7 +10,6 @@
 - Support for multiple LLM providers (OpenAI, OpenRouter, Anthropic)
 - Configurable agent types and behavior
 - Flexible pattern inclusion/exclusion
-- Detailed logging options
 
 ## Configuration
 
