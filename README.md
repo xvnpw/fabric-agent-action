@@ -2,14 +2,28 @@
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
 
-🤖 A GitHub action that leverages [fabric patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) through an agent-based approach. Built with [langgraph](https://www.langchain.com/langgraph) for intelligent pattern selection and execution.
+🤖 A GitHub Action that utilizes [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows through an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it enables intelligent pattern selection and execution using Large Language Models (LLMs).
 
 ## Features
 
-- Seamless integration with GitHub Actions workflow
-- Support for multiple LLM providers (OpenAI, OpenRouter, Anthropic)
-- Configurable agent types and behavior
-- Flexible pattern inclusion/exclusion
+- **Seamless GitHub Actions Integration:** Easily incorporate the action into your existing workflows without additional setup.
+- **Multiple LLM Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference or availability.
+- **Configurable Agent Behavior:** Select agent types (`single_command` or `react`) and customize their behavior to suit your workflow needs.
+- **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and adhere to model limitations.
+
+## Setup
+
+You can add the Fabric Agent Action to your workflow by referencing it in your `.yaml` file:
+
+```yaml
+- name: Execute Fabric Agent Action
+  uses: xvnpw/fabric-agent-action@v0.0.18
+  with:
+    input_file: path/to/input.md
+    output_file: path/to/output.md
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
 
 ## Configuration
 
@@ -28,10 +42,12 @@
 | `fabric_provider` | Pattern execution LLM provider | `openai` |
 | `fabric_model` | Pattern execution LLM model | `gpt-4o` |
 | `fabric_temperature` | Pattern execution creativity (0-1) | `0` |
-| `fabric-patterns-included` | Patterns to include (comma-separated). **Important**: Required for `gpt-4o` model which supports only 128 tools (Fabric has 175 patterns as of Nov 2024) | |
+| `fabric-patterns-included` | Patterns to include (comma-separated). **Required for models with pattern limits (e.g., `gpt-4o`).** | |
 | `fabric-patterns-excluded` | Patterns to exclude (comma-separated) | |
 
-> **Note**: For models with tool limits (e.g., `gpt-4o` - 128 tools), use pattern filtering options. Consider `claude-3-5-sonnet-20240620` for full pattern access.
+> **Note:** Models like `gpt-4o` have a limit on the number of tools (128), whereas Fabric currently includes 175 patterns (as of November 2024). Use the `fabric_patterns_included` or `fabric_patterns_excluded` inputs to tailor the patterns used. For access to all patterns without tool limits, consider using `claude-3-5-sonnet-20240620`.
+
+You can find the list of available Fabric Patterns [here](https://github.com/danielmiessler/fabric/tree/main/patterns).
 
 ### Required Environment Variables
 
@@ -46,11 +62,7 @@ This action is flexible on workflow integration. Can be used on issues, push, et
 
 ### Issue Comments - created, edited
 
-Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
-
-Use `github.event.comment.user.login == github.event.repository.owner.login` condition to ensure only authorized users can run fabric patterns. This can avoid draining LLM provider balances.
-
-The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
+The following is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
 
 ```yaml
 name: Fabric Pattern Processing
@@ -119,6 +131,14 @@ jobs:
           body-path: fabric_output.md
 ```
 
+In this workflow:
+
+- The job runs only when:
+  - The comment starts with `/fabric`.
+  - The comment author is the repository owner.
+  - The issue is not a pull request.
+- This prevents unauthorized users from triggering the action, which could lead to excessive API usage or costs.
+
 ## Agent Types
 
 Agents select appropriate fabric patterns. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
@@ -173,4 +193,4 @@ Issues and pull requests welcome! Please follow the existing code style and incl
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
