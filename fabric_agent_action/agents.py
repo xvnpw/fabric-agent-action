@@ -49,20 +49,15 @@ class SingleCommandAgent(BaseAgent):
         llm = self.llm_provider.createAgentLLM()
         llm_with_tools = llm.llm.bind_tools(self.fabric_tools.get_fabric_tools())
 
+        msg_content = """You are a fabric assistant, that is tasked to run actions using fabric tools on given input.
+
+        I will send you input and you should pick right fabric tool for my request. If you are unable to decide on fabric pattern return "no fabric pattern for this request" and finish.
+        """
+
         if llm.use_system_message:
-            agent_msg = SystemMessage(
-                content="""You are a fabric assistant, that is tasked to run actions using fabric tools on given input. 
-                
-                I will send you input and you should pick right fabric tool for my request. If you are unable to decide on fabric pattern return "no fabric pattern for this request" and finish.
-                """
-            )
+            agent_msg = SystemMessage(content=msg_content)
         else:
-            agent_msg = HumanMessage(
-                content="""You are a fabric assistant, that is tasked to run actions using fabric tools on given input. 
-                
-                I will send you input and you should pick right fabric tool for my request. If you are unable to decide on fabric pattern return "no fabric pattern for this request" and finish.
-                """
-            )
+            agent_msg = HumanMessage(content=msg_content)
 
         def assistant(state):
             return {

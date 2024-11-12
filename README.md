@@ -2,143 +2,163 @@
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
 
-🤖 GitHub action that utilizes [fabric patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) in an agent fashion. Agents are implemented using [langgraph](https://www.langchain.com/langgraph).
+🤖 A GitHub action that leverages [fabric patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) through an agent-based approach. Built with [langgraph](https://www.langchain.com/langgraph) for intelligent pattern selection and execution.
 
-## Usage
+## Features
 
-### Action inputs
+- Seamless integration with GitHub Actions workflow
+- Support for multiple LLM providers (OpenAI, OpenRouter, Anthropic)
+- Configurable agent types and behavior
+- Flexible pattern inclusion/exclusion
+- Detailed logging options
 
-| Name | Description | Default |
-| --- | --- | --- |
-| `input_file` | **Required** Path to input file containing issue body and request to agent. See [agent types](#agent-types) section below and [example](#example-usage) | |
-| `output_file` | **Required** Path to output file where fabric pattern results will be written | |
-| `verbose` | Enable verbose messages (python logging set to INFO) | false |
-| `debug` | Enable debug messages (python logging set to DEBUG) | false |
-| `agent_type` | Type of agent: single_command or react. See [agent types](#agent-types) section | single_command |
-| `agent_provider` | LLM provider for agent: openai, openrouter, or anthropic | openai |
-| `agent_model` | Model name for agent | gpt-4o |
-| `agent_temperature` | Sampling temperature for agent model | 0 |
-| `fabric_provider` | LLM provider for fabric: openai, openrouter, or anthropic | openai |
-| `fabric_model` | Model name for fabric | gpt-4o |
-| `fabric_temperature` | Sampling temperature for fabric model | 0 |
-| `fabric-tools-included` | Comma-separated list of fabric patterns to include. **Important**: Required for `gpt-4o` model which supports only 128 tools (Fabric has 175 patterns as of Nov 2024) | |
-| `fabric-tools-excluded` | Comma-separated list of fabric patterns to exclude | |
+## Configuration
 
-Use either `fabric-tools-included` or `fabric-tools-excluded` for models like `gpt-4o`. For access to all patterns, consider using `claude-3-5-sonnet-20240620` from Anthropic. Each fabric pattern becomes a tool in the LLM request.
+### Action Inputs
 
-### Environment variables
+| Input | Description | Default |
+|-------|-------------|---------|
+| `input_file` | **Required** Source file containing issue body and agent instructions | |
+| `output_file` | **Required** Destination file for pattern results | |
+| `verbose` | Enable INFO level logging | `false` |
+| `debug` | Enable DEBUG level logging | `false` |
+| `agent_type` | Agent behavior model (`single_command`/`react`) | `single_command` |
+| `agent_provider` | LLM provider for agent (`openai`/`openrouter`/`anthropic`) | `openai` |
+| `agent_model` | Model name for agent | `gpt-4o` |
+| `agent_temperature` | Model creativity (0-1) for agent | `0` |
+| `fabric_provider` | Pattern execution LLM provider | `openai` |
+| `fabric_model` | Pattern execution LLM model | `gpt-4o` |
+| `fabric_temperature` | Pattern execution creativity (0-1) | `0` |
+| `fabric-patterns-included` | Patterns to include (comma-separated). **Important**: Required for `gpt-4o` model which supports only 128 tools (Fabric has 175 patterns as of Nov 2024) | |
+| `fabric-patterns-excluded` | Patterns to exclude (comma-separated) | |
 
-| Name | Description | Default |
-| --- | --- | --- |
-| OPENAI_API_KEY | OpenAI API Key | |
-| OPENROUTER_API_KEY | OpenRouter API Key | |
-| ANTHROPIC_API_KEY | Anthropic API Key | |
+> **Note**: For models with tool limits (e.g., `gpt-4o` - 128 tools), use pattern filtering options. Consider `claude-3-5-sonnet-20240620` for full pattern access.
 
-One API key must be provided.
+### Required Environment Variables
 
-## Example usage
+Set one of the following API keys:
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `ANTHROPIC_API_KEY`
+
+## Usage Example
 
 This action doesn't yet implement direct GitHub issue body and comment retrieval. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
 
 The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
 
-```yml
-name: Run fabric-agent-action on issue comment
+```yaml
+name: Fabric Pattern Processing
 on:
   issue_comment:
-    types:
-      - created
-      - edited
+    types: [created, edited]
 
 jobs:
-  fabric_agent_action:
-    name: Run fabric-agent-action on issue comment
+  process_fabric:
     # only comments startsWith /fabric are triggering agent run
-    if: startsWith(github.event.comment.body, '/fabric') && !github.event.issue.pull_request
+    # checks user who commented to avoid abuse
+    if: >
+      github.event.comment.user.login == github.event.repository.owner.login &&
+      startsWith(github.event.comment.body, '/fabric') &&
+      !github.event.issue.pull_request
     runs-on: ubuntu-latest
     permissions:
       issues: write
       contents: write
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
+
       # github-script is used to:
       # 1. fetch issue body and comment body
       # 2. write comment body to fabric_input.md file
       # 3. write issue body to fabric_input.md file
-      - uses: actions/github-script@v7
-        id: read-issue-and-comment-script
+      - name: Prepare Input
+        uses: actions/github-script@v7
+        id: prepare-input
         with:
-          result-encoding: string
-          retries: 3
           script: |
             const issue = await github.rest.issues.get({
-              issue_number: ${{ github.event.issue.number }},
-              owner: "${{ github.repository_owner }}",
-              repo: "${{ github.event.repository.name }}",
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
             });
-            const issueBody = issue.data.body;
 
             const comment = await github.rest.issues.getComment({
-              comment_id: ${{ github.event.comment.id }},
-              owner: "${{ github.repository_owner }}",
-              repo: "${{ github.event.repository.name }}",
+              comment_id: context.payload.comment.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo
             });
-            const commentBody = comment.data.body;
 
-            const fabric_input = commentBody + "\n\n" + "GitHub issue:\n" + issueBody;
+            const input = `${comment.data.body}\n\nGitHub issue:\n${issue.data.body}`;
+            require('fs').writeFileSync('fabric_input.md', input);
 
-            const fs = require('fs');
-            fs.writeFileSync('${{ github.workspace }}/fabric_input.md', fabric_input, (err) => {
-                if (err) throw err;
-                console.log('Data written to file');
-            });
-            return JSON.stringify(fabric_input);
-      - name: Run fabric agent action
+            return input;
+
+      - name: Execute Fabric Patterns
         uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.17
         with:
-          input_file: "fabric_input.md"
-          output_file: "fabric_output.md"
-          agent_model: "gpt-4o" # default model, IMPORTANT - gpt-4o only supports 128 patterns - you need to use fabric_tools_included/fabric_tools_excluded 
-          fabric_tools_included: "clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing"
+          input_file: fabric_input.md
+          output_file: fabric_output.md
+          agent_model: gpt-4o # IMPORTANT - gpt-4o only supports 128 patterns - you need to use fabric_patterns_included/fabric_patterns_excluded
+          fabric_patterns_included: clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
       # create-or-update-comment is used to save output from agent back to original issue
-      - name: Add comment
+      - name: Post Results
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.issue.number }}
-          body-path: ${{ github.workspace }}/fabric_output.md
+          body-path: fabric_output.md
 ```
 
-## Agent types
+## Agent Types
 
 Agents select appropriate fabric patterns. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
 
-### `single_command`
+### single_command
 
-`single_command` executes one pattern and returns its output.
+Executes single pattern selections with direct output:
 
-**input_file** content example from [above](#example-usage): `commentBody + "\n\n" + "GitHub issue:\n" + issueBody;`
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+graph TD;
+        __start__([<p>__start__</p>]):::first
+        assistant(assistant)
+        tools(tools)
+        __end__([<p>__end__</p>]):::last
+        __start__ --> assistant;
+        tools --> __end__;
+        assistant -.-> tools;
+        assistant -.-> __end__;
+        classDef default fill:#f2f0ff,line-height:1.2
+        classDef first fill-opacity:0
+        classDef last fill:#bfb6fc
+```
 
-Example:
-
+Example Input:
 ```markdown
 /fabric improve writing
 
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
-
-I developed several prompts to assist with the challenging task of creating design documents. I implemented these as Fabric patterns for everyone's benefit. If you're unfamiliar with Fabric - it's an excellent CLI tool created by Daniel Miessler.
 ```
 
-### `react`
+### react
 
-Not implemented
+*Coming soon*
 
-## LLM Providers
+## Supported LLM Providers
 
-Supported providers:
-- [OpenAI](https://platform.openai.com/)
-- [OpenRouter](https://openrouter.ai/)
-- [Anthropic](https://www.anthropic.com/)
+- [OpenAI](https://platform.openai.com/) - Industry standard
+- [OpenRouter](https://openrouter.ai/) - Multi-model gateway
+- [Anthropic](https://www.anthropic.com/) - Claude models
+
+## Contributing
+
+Issues and pull requests welcome! Please follow the existing code style and include tests for new features.
+
+## License
+
+MIT

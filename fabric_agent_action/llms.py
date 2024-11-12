@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 ProviderType = Literal["openrouter", "openai", "anthropic"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class LLM:
     llm: BaseChatModel
     use_system_message: bool
     number_of_tools: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class LLMConfig:
     provider: ProviderType
     model: str

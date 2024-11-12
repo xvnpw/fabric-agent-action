@@ -43,10 +43,10 @@ def create_tool_code(pattern_name, pattern_content, output_file):
     llm = ChatOpenAI(model="gpt-4o")
 
     sys_msg = SystemMessage(
-        content="""You are a helpful assistant tasked with creating python functions that will be used as fabric tools for LLM. I will give you PROMPT NAME and PROMPT CONTENT. You will create me well formatted python function. 
-        
+        content="""You are a helpful assistant tasked with creating python functions that will be used as fabric tools for LLM. I will give you PROMPT NAME and PROMPT CONTENT. You will create me well formatted python function.
+
         FORMATTING
-        
+
         def function_name(self, input: str):
             \"""Tool description
 
@@ -54,17 +54,17 @@ def create_tool_code(pattern_name, pattern_content, output_file):
                 input: input text
             \"""
         return self.invoke_llm(input, "prompt_name")
-        
+
         - replace function_name with value of PROMPT_NAME
         - prompt_name replace with value of PROMPT_NAME
         - description of tool must contains information that tool is "fabric pattern"
-        
+
         EXAMPLE
-        
+
         - PROMPT NAME: clean_text
         - PROMPT CONTENT: # IDENTITY and PURPOSE
 
-You are an expert at cleaning up broken and, malformatted, text, for example: line breaks in weird places, etc. 
+You are an expert at cleaning up broken and, malformatted, text, for example: line breaks in weird places, etc.
 
 # Steps
 

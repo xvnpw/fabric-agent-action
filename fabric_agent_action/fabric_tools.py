@@ -66,7 +66,7 @@ class FabricTools:
         logger.debug(f"Reading fabric pattern from: {file_path}")
 
         try:
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
             self._patterns_cache[pattern_name] = content
             return content
@@ -1509,7 +1509,7 @@ class FabricTools:
         )
         if len(filtered_tools) > self.number_of_tools:
             raise ValueError(
-                f"Model supporting only {self.number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-tools-include/--fabric-tools-exclude or different model."
+                f"Model supporting only {self.number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-patterns-include/--fabric-patterns-exclude or different model."
             )
         return filtered_tools
 

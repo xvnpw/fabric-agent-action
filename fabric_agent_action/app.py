@@ -1,10 +1,12 @@
 import argparse
+import io
 import logging
 import sys
 from dataclasses import dataclass
-from typing import TextIO
+from typing import Optional, TextIO
 
 from langchain_core.messages import HumanMessage
+from typing_extensions import Literal
 
 from fabric_agent_action.agents import AgentBuilder
 from fabric_agent_action.fabric_tools import FabricTools
@@ -13,23 +15,30 @@ from fabric_agent_action.llms import LLMProvider
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppConfig:
-    """Configuration class to hold application settings"""
+    """Immutable configuration class with type hints and documentation"""
 
     input_file: TextIO
     output_file: TextIO
     verbose: bool
     debug: bool
-    agent_provider: str
+    agent_provider: Literal["openai", "openrouter", "anthropic"]
     agent_model: str
     agent_temperature: float
-    fabric_provider: str
+    fabric_provider: Literal["openai", "openrouter", "anthropic"]
     fabric_model: str
     fabric_temperature: float
-    agent_type: str
-    fabric_tools_included: str
-    fabric_tools_excluded: str
+    agent_type: Literal["single_command", "react"]
+    fabric_patterns_included: Optional[str] = None
+    fabric_patterns_excluded: Optional[str] = None
+
+    def __post_init__(self):
+        """Validate configuration after initialization"""
+        if self.agent_temperature < 0 or self.agent_temperature > 1:
+            raise ValueError("Agent temperature must be between 0 and 1")
+        if self.fabric_temperature < 0 or self.fabric_temperature > 1:
+            raise ValueError("Fabric temperature must be between 0 and 1")
 
 
 def setup_logging(verbose: bool, debug: bool) -> None:
@@ -149,14 +158,14 @@ def parse_arguments() -> AppConfig:
         help="Sampling temperature for fabric model (default: 0)",
     )
     fabric_group.add_argument(
-        "--fabric-tools-included",
+        "--fabric-patterns-included",
         type=str,
-        help="Comma separated list of fabric tools to include in agent",
+        help="Comma separated list of fabric patterns to include in agent",
     )
     fabric_group.add_argument(
-        "--fabric-tools-excluded",
+        "--fabric-patterns-excluded",
         type=str,
-        help="Comma separated list of fabric tools to exclude in agent",
+        help="Comma separated list of fabric patterns to exclude in agent",
     )
 
     args = parser.parse_args()
@@ -181,14 +190,15 @@ def main() -> None:
             fabric_llm.llm,
             fabric_llm.use_system_message,
             fabric_llm.number_of_tools,
-            config.fabric_tools_included,
-            config.fabric_tools_excluded,
+            config.fabric_patterns_included,
+            config.fabric_patterns_excluded,
         )
 
         agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
         graph = agent_builder.build()
 
-        invoke_graph(graph, config, input_str, config.output_file)
+        executor = GraphExecutor(config)
+        executor.execute(graph, input_str)
 
         logger.info("Fabric Agent Action completed successfully")
 
@@ -204,27 +214,50 @@ def main() -> None:
                 config.output_file.close()
 
 
-def invoke_graph(graph, config, input_str: str, output_file: TextIO) -> None:
-    logger.debug("Invoking graph...")
+class GraphExecutor:
+    """Handles graph execution and output generation"""
 
-    try:
+    def __init__(self, config: AppConfig):
+        self.config = config
+        self._setup_output_encoding()
+
+    def _setup_output_encoding(self) -> None:
+        """Configure output encoding for the file handler"""
+        if isinstance(self.config.output_file, io.TextIOWrapper):
+            # Try to set UTF-8 encoding for file output
+            try:
+                self.config.output_file.reconfigure(encoding="utf-8")
+            except Exception as e:
+                logger.warning(
+                    f"Could not set UTF-8 encoding: {e}. Falling back to system default."
+                )
+
+    def execute(self, graph, input_str: str) -> None:
+        try:
+            messages_state = self._invoke_graph(graph, input_str)
+
+            for msg in messages_state["messages"]:
+                logger.debug(f"Message: {msg.pretty_repr()}")
+
+            self._write_output(messages_state)
+        except Exception as e:
+            logger.error(f"Graph execution failed: {str(e)}")
+            raise
+
+    def _invoke_graph(self, graph, input_str: str) -> dict:
         input_messages = [HumanMessage(content=input_str)]
-        messages_state = graph.invoke({"messages": input_messages})
+        return graph.invoke({"messages": input_messages})
 
-        logger.debug("Graph execution completed")
-
-        for msg in messages_state["messages"]:
-            logger.debug(f"Message: {msg.pretty_repr()}")
-
+    def _write_output(self, messages_state: dict) -> None:
         last_message = messages_state["messages"][-1]
+        content = self._format_output(last_message.content)
+        self.config.output_file.write(content)
 
-        content = f"##### (🤖 AI Generated, agent model: {config.agent_model}, fabric model: {config.fabric_model})\n\n{last_message.content}"
-
-        output_file.write(content)
-
-    except Exception as e:
-        logger.error(f"Error during graph execution: {e}")
-        raise
+    def _format_output(self, content: str) -> str:
+        return (
+            f"##### (🤖 AI Generated, agent model: {self.config.agent_model}, "
+            f"fabric model: {self.config.fabric_model})\n\n{content}"
+        )
 
 
 if __name__ == "__main__":
