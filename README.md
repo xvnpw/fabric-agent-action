@@ -42,7 +42,13 @@ Set one of the following API keys:
 
 ## Usage Example
 
-This action is flexible on workflow integration. Can be used on issues, push, etc. Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
+This action is flexible on workflow integration. Can be used on issues, push, etc.
+
+### Issue Comments - created, edited
+
+Use `actions/github-script` for fetching and `peter-evans/create-or-update-comment` for writing back to original issue. The condition `if: contains(github.event.comment.body, '/fabric')` ensures that the workflow runs only when referencing `/fabric`.
+
+Use `github.event.comment.user.login == github.event.repository.owner.login` condition to ensure only authorized users can run fabric patterns. This can avoid you draining your LLM provider balances.
 
 The example references the action from GHCR docker registry to avoid rebuilding the container. Alternatively, use `uses: xvnpw/fabric-agent-action@vx.y.z`.
 
