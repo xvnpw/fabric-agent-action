@@ -142,6 +142,16 @@ In this workflow:
   - The issue is not a pull request.
 - This prevents unauthorized users from triggering the action, which could lead to excessive API usage or costs.
 
+### More examples
+
+| Example | Links |
+| --- | --- |
+| Create pull request on changes in `README.md` to run [improve writing pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/improve_writing/system.md) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/4), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-readme-pr.yml) |
+| Create pull request on changes in `docs/` directory to run improve writing pattern | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/8), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-docs-pr.yml) |
+| Run fabric patterns from issue comment - [single_command agent](https://github.com/xvnpw/fabric-agent-action?tab=readme-ov-file#single_command) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/5), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-single-command.yml) |
+| Run fabric patterns from issue comment - [react agent](https://github.com/xvnpw/fabric-agent-action?tab=readme-ov-file#react) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/6), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react.yml) |
+| Automatically run fabric [write-pull-request pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md) on pull request | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/7), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-diff.yml) |
+
 ## Agent Types
 
 Agents select appropriate fabric patterns. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
@@ -180,7 +190,7 @@ Example Output:
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results.
 ```
 
-### ReAct
+### react
 
 Agent is taking input from user, deciding on pattern selection and again reason about output from pattern:
 
