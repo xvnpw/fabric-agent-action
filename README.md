@@ -39,6 +39,7 @@ You can add the Fabric Agent Action to your workflow by referencing it in your `
 | `agent_provider` | LLM provider for agent (`openai`/`openrouter`/`anthropic`) | `openai` |
 | `agent_model` | Model name for agent | `gpt-4o` |
 | `agent_temperature` | Model creativity (0-1) for agent | `0` |
+| `agent_preamble_enabled` | Enable preamble in output | `false` |
 | `agent_preamble` | Preamble that is added to the beginning of output | `##### (🤖 AI Generated)` |
 | `fabric_provider` | Pattern execution LLM provider | `openai` |
 | `fabric_model` | Pattern execution LLM model | `gpt-4o` |
@@ -115,10 +116,11 @@ jobs:
             return input;
 
       - name: Execute Fabric Patterns
-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.18
+        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.21
         with:
           input_file: fabric_input.md
           output_file: fabric_output.md
+          agent_preamble_enabled: true
           agent_model: gpt-4o # IMPORTANT - gpt-4o only supports 128 patterns - you need to use fabric_patterns_included/fabric_patterns_excluded
           fabric_patterns_included: clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing
         env:

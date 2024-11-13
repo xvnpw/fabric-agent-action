@@ -26,6 +26,7 @@ class AppConfig:
     agent_provider: Literal["openai", "openrouter", "anthropic"]
     agent_model: str
     agent_temperature: float
+    agent_preamble_enabled: bool
     agent_preamble: str
     fabric_provider: Literal["openai", "openrouter", "anthropic"]
     fabric_model: str
@@ -135,6 +136,11 @@ def parse_arguments() -> AppConfig:
         choices=["single_command", "react"],
         default="single_command",
         help="Type of agent (default: single_command)",
+    )
+    agent_group.add_argument(
+        "--agent-preamble-enabled",
+        action="store_true",
+        help="Enable preamble in output",
     )
     agent_group.add_argument(
         "--agent-preamble",
@@ -261,7 +267,7 @@ class GraphExecutor:
         self.config.output_file.write(content)
 
     def _format_output(self, content: str) -> str:
-        if self.config.agent_preamble:
+        if self.config.agent_preamble_enabled:
             return self.config.agent_preamble + f"\n\n{content}"
         else:
             return content

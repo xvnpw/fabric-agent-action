@@ -30,6 +30,10 @@ if [ -n "$INPUT_AGENT_TEMPERATURE" ]; then
     ARGS="$ARGS --agent-temperature $INPUT_AGENT_TEMPERATURE"
 fi
 
+if [ "$INPUT_AGENT_PREAMBLE_ENABLED" = 'true' ]; then
+    ARGS="$ARGS --agent-preamble-enabled"
+fi
+
 if [ -n "$INPUT_AGENT_PREAMBLE" ]; then
     ARGS="$ARGS --agent-preamble $INPUT_AGENT_PREAMBLE"
 fi
