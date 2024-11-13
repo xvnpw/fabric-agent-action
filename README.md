@@ -185,7 +185,7 @@ I encountered a challenge in creating high-quality design documents for my threa
 
 Example Output:
 ```markdown
-##### (🤖 AI Generated, agent model: gpt-4o, fabric model: gpt-4o)
+##### (🤖 AI Generated)
 
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results.
 ```
@@ -225,7 +225,7 @@ I encountered a challenge in creating high-quality design documents for my threa
 
 Example Output:
 ```markdown
-##### (🤖 AI Generated, agent model: gpt-4o, fabric model: gpt-4o)
+##### (🤖 AI Generated)
 
 Here is the cleaned and improved version of your text:
 
