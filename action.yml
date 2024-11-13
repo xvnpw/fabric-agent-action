@@ -28,6 +28,9 @@ inputs:
     description: 'agent sampling temperature for a model'
     required: false
     default: 0
+  agent_preamble:
+    description: 'Preamble that is added to the beginning of output'
+    required: false
   fabric_provider:
     description: 'fabric provider name'
     required: false

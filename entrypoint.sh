@@ -30,6 +30,10 @@ if [ -n "$INPUT_AGENT_TEMPERATURE" ]; then
     ARGS="$ARGS --agent-temperature $INPUT_AGENT_TEMPERATURE"
 fi
 
+if [ -n "$INPUT_AGENT_PREAMBLE" ]; then
+    ARGS="$ARGS --agent-preamble $INPUT_AGENT_PREAMBLE"
+fi
+
 if [ -n "$INPUT_FABRIC_PROVIDER" ]; then
     ARGS="$ARGS --fabric-provider $INPUT_FABRIC_PROVIDER"
 fi

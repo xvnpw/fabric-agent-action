@@ -26,6 +26,7 @@ class AppConfig:
     agent_provider: Literal["openai", "openrouter", "anthropic"]
     agent_model: str
     agent_temperature: float
+    agent_preamble: str
     fabric_provider: Literal["openai", "openrouter", "anthropic"]
     fabric_model: str
     fabric_temperature: float
@@ -135,6 +136,12 @@ def parse_arguments() -> AppConfig:
         default="single_command",
         help="Type of agent (default: single_command)",
     )
+    agent_group.add_argument(
+        "--agent-preamble",
+        type=str,
+        default="##### (🤖 AI Generated)",
+        help="Preamble that is added to the beginning of output (default: ##### (🤖 AI Generated)",
+    )
 
     # Fabric configuration
     fabric_group = parser.add_argument_group("Fabric Configuration")
@@ -189,7 +196,7 @@ def main() -> None:
         fabric_tools = FabricTools(
             fabric_llm.llm,
             fabric_llm.use_system_message,
-            fabric_llm.number_of_tools,
+            fabric_llm.max_number_of_tools,
             config.fabric_patterns_included,
             config.fabric_patterns_excluded,
         )
@@ -254,10 +261,10 @@ class GraphExecutor:
         self.config.output_file.write(content)
 
     def _format_output(self, content: str) -> str:
-        return (
-            f"##### (🤖 AI Generated, agent model: {self.config.agent_model}, "
-            f"fabric model: {self.config.fabric_model})\n\n{content}"
-        )
+        if self.config.agent_preamble:
+            return self.config.agent_preamble + f"\n\n{content}"
+        else:
+            return content
 
 
 if __name__ == "__main__":

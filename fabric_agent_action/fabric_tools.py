@@ -44,13 +44,13 @@ class FabricTools:
         self,
         llm: BaseChatModel,
         use_system_message: bool = True,
-        number_of_tools: int = 128,
+        max_number_of_tools: int = None,
         included_tools: str = None,
         excluded_tools: str = None,
     ):
         self.llm = llm
         self.use_system_message = use_system_message
-        self.number_of_tools = number_of_tools
+        self.max_number_of_tools = max_number_of_tools
         self.tools_filter = FabricToolsFilter(included_tools, excluded_tools)
         self._patterns_cache: dict[str, str] = {}
 
@@ -1507,9 +1507,9 @@ class FabricTools:
         filtered_tools = self.tools_filter.get_fabric_tools_list(
             self._get_fabric_tools()
         )
-        if len(filtered_tools) > self.number_of_tools:
+        if self.max_number_of_tools and len(filtered_tools) > self.max_number_of_tools:
             raise ValueError(
-                f"Model supporting only {self.number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-patterns-include/--fabric-patterns-exclude or different model."
+                f"Model supporting only {self.max_number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-patterns-include/--fabric-patterns-exclude or different model."
             )
         return filtered_tools
 

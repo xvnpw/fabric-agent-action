@@ -44,7 +44,7 @@ def test_get_llm_instance_openai(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatOpenAI)
     assert llm.use_system_message is True
-    assert llm.number_of_tools is None
+    assert llm.max_number_of_tools is None
 
 
 def test_get_llm_instance_anthropic(mock_env, llm_provider):
@@ -54,7 +54,7 @@ def test_get_llm_instance_anthropic(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatAnthropic)
     assert llm.use_system_message is True
-    assert llm.number_of_tools is None
+    assert llm.max_number_of_tools is None
 
 
 def test_get_llm_instance_openrouter(mock_env, llm_provider):
@@ -64,7 +64,7 @@ def test_get_llm_instance_openrouter(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatOpenAI)
     assert llm.use_system_message is True
-    assert llm.number_of_tools == 128
+    assert llm.max_number_of_tools == 128
 
 
 def test_get_llm_instance_special_model_config(mock_env, llm_provider):
@@ -74,7 +74,7 @@ def test_get_llm_instance_special_model_config(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatOpenAI)
     assert llm.use_system_message is False
-    assert llm.number_of_tools == 256
+    assert llm.max_number_of_tools == 256
 
 
 def test_get_llm_instance_invalid_provider(mock_env, llm_provider):
@@ -125,5 +125,5 @@ def test_model_configurations(
 
     llm = llm_provider._get_llm_instance(config)
 
-    assert llm.number_of_tools == expected_tools
+    assert llm.max_number_of_tools == expected_tools
     assert llm.use_system_message == expected_system_message

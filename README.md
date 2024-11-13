@@ -39,6 +39,7 @@ You can add the Fabric Agent Action to your workflow by referencing it in your `
 | `agent_provider` | LLM provider for agent (`openai`/`openrouter`/`anthropic`) | `openai` |
 | `agent_model` | Model name for agent | `gpt-4o` |
 | `agent_temperature` | Model creativity (0-1) for agent | `0` |
+| `agent_preamble` | Preamble that is added to the beginning of output | `##### (🤖 AI Generated)` |
 | `fabric_provider` | Pattern execution LLM provider | `openai` |
 | `fabric_model` | Pattern execution LLM model | `gpt-4o` |
 | `fabric_temperature` | Pattern execution creativity (0-1) | `0` |

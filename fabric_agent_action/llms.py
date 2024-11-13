@@ -19,7 +19,7 @@ ProviderType = Literal["openrouter", "openai", "anthropic"]
 class LLM:
     llm: BaseChatModel
     use_system_message: bool
-    number_of_tools: int
+    max_number_of_tools: int
 
 
 @dataclass(frozen=True)
@@ -98,7 +98,7 @@ class LLMProvider:
         return LLM(
             llm=provider_config["class"](**kwargs),
             use_system_message=model_config["use_system_message"],
-            number_of_tools=model_config["max_number_of_tools"],
+            max_number_of_tools=model_config["max_number_of_tools"],
         )
 
     def createAgentLLM(self) -> LLM:

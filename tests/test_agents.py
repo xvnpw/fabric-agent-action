@@ -14,7 +14,7 @@ def mock_llm_provider():
     mock_llm = Mock(spec=LLM)
     mock_llm.use_system_message = True
     mock_llm.llm = Mock()
-    mock_llm.number_of_tools = 128
+    mock_llm.max_number_of_tools = 128
     provider.createAgentLLM.return_value = mock_llm
     return provider
 

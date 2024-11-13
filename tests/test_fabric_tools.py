@@ -219,7 +219,19 @@ def test_invoke_llm(llm):
 )
 def test_fabric_tools_filter(llm, included, excluded, tools_count):
     fabric_tools = FabricTools(
-        llm, number_of_tools=1000, included_tools=included, excluded_tools=excluded
+        llm, max_number_of_tools=1000, included_tools=included, excluded_tools=excluded
     )
     tools = fabric_tools.get_fabric_tools()
     assert len(tools) == tools_count
+
+
+def test_fabric_tools_max_number_of_tools(llm):
+    fabric_tools = FabricTools(llm, max_number_of_tools=None)
+    tools = fabric_tools.get_fabric_tools()
+    assert len(tools) == 175
+
+
+def test_fabric_tools_max_number_of_tools_on_error(llm):
+    fabric_tools = FabricTools(llm, max_number_of_tools=1)
+    with pytest.raises(ValueError, match="Model supporting only 1 tools, but got 175"):
+        fabric_tools.get_fabric_tools()
