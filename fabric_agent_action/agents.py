@@ -44,7 +44,7 @@ class SingleCommandAgent(BaseAgent):
         self.fabric_tools = fabric_tools
 
     def build_graph(self):
-        logger.debug("[single-command-agent] building graph...")
+        logger.debug(f"[{SingleCommandAgent.__name__}] building graph...")
 
         llm = self.llm_provider.createAgentLLM()
         llm_with_tools = llm.llm.bind_tools(self.fabric_tools.get_fabric_tools())
@@ -76,5 +76,37 @@ class SingleCommandAgent(BaseAgent):
 
 
 class ReActAgent(BaseAgent):
+    def __init__(self, llm_provider: LLMProvider, fabric_tools):
+        self.llm_provider = llm_provider
+        self.fabric_tools = fabric_tools
+
     def build_graph(self):
-        raise NotImplementedError()
+        logger.debug(f"[{ReActAgent.__name__}] building graph...")
+
+        llm = self.llm_provider.createAgentLLM()
+        llm_with_tools = llm.llm.bind_tools(self.fabric_tools.get_fabric_tools())
+
+        msg_content = """You are a fabric assistant, that is tasked to run actions using fabric tools on given input.
+
+        I will send you input and you should pick right fabric tool for my request. If you are unable to decide on fabric pattern return "no fabric pattern for this request" and finish.
+        """
+
+        if llm.use_system_message:
+            agent_msg = SystemMessage(content=msg_content)
+        else:
+            agent_msg = HumanMessage(content=msg_content)
+
+        def assistant(state):
+            return {
+                "messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]
+            }
+
+        builder = StateGraph(MessagesState)
+        builder.add_node("assistant", assistant)
+        builder.add_node("tools", ToolNode(self.fabric_tools.get_fabric_tools()))
+        builder.add_edge(START, "assistant")
+        builder.add_conditional_edges("assistant", tools_condition)
+        builder.add_edge("tools", "assistant")
+        graph = builder.compile()
+
+        return graph

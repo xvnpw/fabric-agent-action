@@ -179,7 +179,49 @@ I encountered a challenge in creating high-quality design documents for my threa
 
 ### ReAct
 
-*Coming soon*
+Agent is taking input from user, deciding on pattern selection and again reason about output from pattern:
+
+```mermaid
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+graph TD;
+        __start__([<p>__start__</p>]):::first
+        assistant(assistant)
+        tools(tools)
+        __end__([<p>__end__</p>]):::last
+        __start__ --> assistant;
+        tools --> assistant;
+        assistant -.-> tools;
+        assistant -.-> __end__;
+        classDef default fill:#f2f0ff,line-height:1.2
+        classDef first fill-opacity:0
+        classDef last fill:#bfb6fc
+```
+
+This is the intuition behind [ReAct](https://react-lm.github.io/):
+
+* `act` - let the model call specific tools (in our case patterns)
+* `observe` - pass the tool output back to the model
+* `reason` - let the model reason about the tool output to decide what to do next (e.g., call another tool or just respond directly)
+
+Example Input:
+```markdown
+/fabric clean text and improve writing
+
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+```
+
+Example Output:
+```markdown
+##### (🤖 AI Generated, agent model: gpt-4o, fabric model: gpt-4o)
+
+Here is the cleaned and improved version of your text:
+
+Cleaned Text:
+"I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results."
+
+Improved Writing:
+"I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results."
+```
 
 ## Supported LLM Providers
 

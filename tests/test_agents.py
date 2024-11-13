@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from fabric_agent_action.agents import AgentBuilder, SingleCommandAgent
+from fabric_agent_action.agents import AgentBuilder, SingleCommandAgent, ReActAgent
 from fabric_agent_action.fabric_tools import FabricTools
 from fabric_agent_action.llms import LLM, LLMProvider
 
@@ -49,6 +49,27 @@ class TestAgentBuilder:
 class TestSingleCommandAgent:
     def test_system_message_creation(self, mock_llm_provider, mock_fabric_tools):
         agent = SingleCommandAgent(mock_llm_provider, mock_fabric_tools)
+
+        # Get the LLM mock
+        llm_mock = mock_llm_provider.createAgentLLM()
+        llm_mock.use_system_message = True
+
+        graph = agent.build_graph()
+
+        # The graph was created, now we can verify the message type
+        # This requires inspecting the assistant node's function
+        nodes = graph.nodes
+        assert "assistant" in nodes
+
+        # Verify that bind_tools was called
+        llm_mock.llm.bind_tools.assert_called_once_with(
+            mock_fabric_tools.get_fabric_tools()
+        )
+
+
+class TestReActAgent:
+    def test_system_message_creation(self, mock_llm_provider, mock_fabric_tools):
+        agent = ReActAgent(mock_llm_provider, mock_fabric_tools)
 
         # Get the LLM mock
         llm_mock = mock_llm_provider.createAgentLLM()
