@@ -51,3 +51,6 @@ jobs:
          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
          TERM: xterm
         run: bats bats/test-entrypoint.bats
+
+      - name: Security check with Bandit
+        run: poetry run bandit -r . --severity-level high
