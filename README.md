@@ -2,28 +2,41 @@
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
 
-🤖 A GitHub Action that utilizes [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows through an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it enables intelligent pattern selection and execution using Large Language Models (LLMs).
+🤖 **Fabric Agent Action** is a GitHub Action that leverages [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows using an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it intelligently selects and executes patterns using Large Language Models (LLMs).
 
 ## Features
 
-- **Seamless GitHub Actions Integration:** Easily incorporate the action into your existing workflows without additional setup.
-- **Multiple LLM Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference or availability.
+- **Seamless Integration:** Easily incorporate the action into your existing workflows without additional setup.
+- **Multi-Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference and availability.
 - **Configurable Agent Behavior:** Select agent types (`single_command` or `react`) and customize their behavior to suit your workflow needs.
-- **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and adhere to model limitations.
+- **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and comply with model limitations.
 
 ## Setup
 
-You can add the Fabric Agent Action to your workflow by referencing it in your `.yaml` file:
+Add the Fabric Agent Action to your workflow by referencing it in your `.yaml` file:
 
 ```yaml
 - name: Execute Fabric Agent Action
-  uses: xvnpw/fabric-agent-action@v0.0.18
+  uses: xvnpw/fabric-agent-action@v0.0.21
   with:
     input_file: path/to/input.md
     output_file: path/to/output.md
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
+
+Set Environment Variables: Ensure you set the required API keys in your repository's secrets.
+
+## Security
+
+**⚠️ Important:** Before using this action, implement protections against unauthorized use, especially in public repositories. Unauthorized usage can lead to excessive API consumption and incur costs.
+
+Use workflow conditions to limit who can run this action:
+
+| Type | Abuse Description | Example Protecting Condition |
+| --- | --- | --- |
+| Pull request  | Pull requests can originate from forks | `if: github.event.pull_request.head.repo.full_name == github.repository` |
+| Issue comment | Anyone can create issues and add comments on public repositories | `github.event.comment.user.login == github.event.repository.owner.login` |
 
 ## Configuration
 
@@ -40,31 +53,33 @@ You can add the Fabric Agent Action to your workflow by referencing it in your `
 | `agent_model` | Model name for agent | `gpt-4o` |
 | `agent_temperature` | Model creativity (0-1) for agent | `0` |
 | `agent_preamble_enabled` | Enable preamble in output | `false` |
-| `agent_preamble` | Preamble that is added to the beginning of output | `##### (🤖 AI Generated)` |
+| `agent_preamble` | Preamble added to the beginning of output | `##### (🤖 AI Generated)` |
 | `fabric_provider` | Pattern execution LLM provider | `openai` |
 | `fabric_model` | Pattern execution LLM model | `gpt-4o` |
 | `fabric_temperature` | Pattern execution creativity (0-1) | `0` |
 | `fabric-patterns-included` | Patterns to include (comma-separated). **Required for models with pattern limits (e.g., `gpt-4o`).** | |
 | `fabric-patterns-excluded` | Patterns to exclude (comma-separated) | |
+| `fabric_max_num_turns` | Maximum number of turns to LLM when running fabric patterns | 10 |
 
-> **Note:** Models like `gpt-4o` have a limit on the number of tools (128), whereas Fabric currently includes 175 patterns (as of November 2024). Use the `fabric_patterns_included` or `fabric_patterns_excluded` inputs to tailor the patterns used. For access to all patterns without tool limits, consider using `claude-3-5-sonnet-20240620`.
+> **Note:** Models like `gpt-4o` have a limit on the number of tools (128), while Fabric currently includes 175 patterns (as of November 2024). Use `fabric_patterns_included` or `fabric_patterns_excluded` to tailor the patterns used. For access to all patterns without tool limits, consider using `claude-3-5-sonnet-20240620`.
 
-You can find the list of available Fabric Patterns [here](https://github.com/danielmiessler/fabric/tree/main/patterns).
+Find the list of available Fabric Patterns [here](https://github.com/danielmiessler/fabric/tree/main/patterns).
 
 ### Required Environment Variables
 
 Set one of the following API keys:
+
 - `OPENAI_API_KEY`
 - `OPENROUTER_API_KEY`
 - `ANTHROPIC_API_KEY`
 
 ## Usage Example
 
-This action is flexible on workflow integration. Can be used on issues, push, etc.
+This action is flexible in workflow integration and can be used on issues, pushes, etc.
 
-### Issue Comments - created, edited
+### Issue Comments - Created or Edited
 
-The following is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
+Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
 
 ```yaml
 name: Fabric Pattern Processing
@@ -74,8 +89,7 @@ on:
 
 jobs:
   process_fabric:
-    # only comments startsWith /fabric are triggering agent run
-    # checks user who commented to avoid abuse
+    # Only trigger when comments start with '/fabric' from the repository owner
     if: >
       github.event.comment.user.login == github.event.repository.owner.login &&
       startsWith(github.event.comment.body, '/fabric') &&
@@ -89,10 +103,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # github-script is used to:
-      # 1. fetch issue body and comment body
-      # 2. write comment body to fabric_input.md file
-      # 3. write issue body to fabric_input.md file
+      # Use github-script to fetch issue and comment details and prepare input
       - name: Prepare Input
         uses: actions/github-script@v7
         id: prepare-input
@@ -121,12 +132,12 @@ jobs:
           input_file: fabric_input.md
           output_file: fabric_output.md
           agent_preamble_enabled: true
-          agent_model: gpt-4o # IMPORTANT - gpt-4o only supports 128 patterns - you need to use fabric_patterns_included/fabric_patterns_excluded
+          agent_model: gpt-4o  # IMPORTANT: gpt-4o supports only 128 patterns; use fabric_patterns_included/fabric_patterns_excluded
           fabric_patterns_included: clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      # create-or-update-comment is used to save output from agent back to original issue
+      # Post the results back to the original issue
       - name: Post Results
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -140,25 +151,36 @@ In this workflow:
   - The comment starts with `/fabric`.
   - The comment author is the repository owner.
   - The issue is not a pull request.
-- This prevents unauthorized users from triggering the action, which could lead to excessive API usage or costs.
+- This prevents unauthorized users from triggering the action, avoiding excessive API usage or costs.
 
-### More examples
+### More Examples
 
 | Example | Links |
 | --- | --- |
-| Create pull request on changes in `README.md` to run [improve writing pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/improve_writing/system.md) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/4), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-readme-pr.yml) |
-| Create pull request on changes in `docs/` directory to run improve writing pattern | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/8), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-docs-pr.yml) |
-| Run fabric patterns from issue comment - [single_command agent](https://github.com/xvnpw/fabric-agent-action?tab=readme-ov-file#single_command) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/5), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-single-command.yml) |
-| Run fabric patterns from issue comment - [react agent](https://github.com/xvnpw/fabric-agent-action?tab=readme-ov-file#react) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/6), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react.yml) |
-| Automatically run fabric [write-pull-request pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md) on pull request | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/7), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-diff.yml) |
+| Create a pull request on changes in `README.md` to run the [improve_writing pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/improve_writing/system.md) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/4), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-readme-pr.yml) |
+| Create a pull request on changes in the `docs/` directory to run the `improve_writing` pattern | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/8), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-docs-pr.yml) |
+| Run fabric patterns from issue comments using the [single_command agent](#single_command-agent) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/5), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-single-command.yml) |
+| Run fabric patterns from issue comments using the [react agent](#react-agent) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/6), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react.yml) |
+| Automatically run the fabric [write_pull_request pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md) on pull requests | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/7), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-diff.yml) |
 
 ## Agent Types
 
-Agents select appropriate fabric patterns. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
+Agents select appropriate Fabric patterns based on the input. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
 
-### single_command
+```mermaid
+quadrantChart
+    title Agents: Autonomy vs. Reliability
+    x-axis Low Autonomy --> High Autonomy
+    y-axis Low Reliability --> High Reliability
+    Single Command Agent: [0.25, 0.75]
+    ReAct Agent: [0.6, 0.4]
+```
 
-Executes single pattern selections with direct output:
+In practice, there's often a trade-off between autonomy and reliability. Increasing LLM autonomy can sometimes reduce reliability due to factors like non-determinism or errors in tool selection.
+
+### `single_command` Agent
+
+Executes a single pattern selection with direct output:
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
@@ -176,23 +198,25 @@ graph TD;
         classDef last fill:#bfb6fc
 ```
 
-Example Input:
+**Example Input:**
+
 ```markdown
 /fabric improve writing
 
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
 ```
 
-Example Output:
+**Example Output:**
+
 ```markdown
 ##### (🤖 AI Generated)
 
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results.
 ```
 
-### react
+### `react` Agent
 
-Agent is taking input from user, deciding on pattern selection and again reason about output from pattern:
+The agent takes input from the user, decides on pattern selection, and reasons about the output from the pattern:
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
@@ -210,20 +234,24 @@ graph TD;
         classDef last fill:#bfb6fc
 ```
 
-This is the intuition behind [ReAct](https://react-lm.github.io/):
+Use `fabric_max_num_turns` to limit number of turns to LLM.
 
-* `act` - let the model call specific tools (in our case patterns)
-* `observe` - pass the tool output back to the model
-* `reason` - let the model reason about the tool output to decide what to do next (e.g., call another tool or just respond directly)
+This approach follows the intuition behind [ReAct](https://react-lm.github.io/):
 
-Example Input:
+- **Act:** Let the model call specific tools (patterns).
+- **Observe:** Pass the tool output back to the model.
+- **Reason:** Let the model reason about the tool output to decide the next action.
+
+**Example Input:**
+
 ```markdown
 /fabric clean text and improve writing
 
 I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
 ```
 
-Example Output:
+**Example Output:**
+
 ```markdown
 ##### (🤖 AI Generated)
 
@@ -244,7 +272,7 @@ Improved Writing:
 
 ## Contributing
 
-Issues and pull requests welcome! Please follow the existing code style and include tests for new features.
+Contributions are welcome! Please open issues and pull requests. Ensure that you follow the existing code style and include tests for new features.
 
 ## License
 

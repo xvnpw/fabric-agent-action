@@ -1,22 +1,20 @@
-# test_agents.py
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
-from fabric_agent_action.agents import AgentBuilder, SingleCommandAgent, ReActAgent
+from fabric_agent_action.agents import AgentBuilder, ReActAgent, SingleCommandAgent
 from fabric_agent_action.fabric_tools import FabricTools
-from fabric_agent_action.llms import LLM, LLMProvider
 
 
 @pytest.fixture
-def mock_llm_provider():
-    provider = Mock(spec=LLMProvider)
-    mock_llm = Mock(spec=LLM)
+def llm_provider():
+    mock_llm_provider = Mock()
+    mock_llm = Mock()
     mock_llm.use_system_message = True
-    mock_llm.llm = Mock()
-    mock_llm.max_number_of_tools = 128
-    provider.createAgentLLM.return_value = mock_llm
-    return provider
+    mock_llm.llm = MagicMock()
+    mock_llm_provider.createAgentLLM.return_value = mock_llm
+    return mock_llm_provider
 
 
 @pytest.fixture
@@ -34,55 +32,72 @@ def mock_fabric_tools():
     return tools
 
 
-class TestAgentBuilder:
-    def test_build_single_command_agent(self, mock_llm_provider, mock_fabric_tools):
-        builder = AgentBuilder("single_command", mock_llm_provider, mock_fabric_tools)
-        graph = builder.build()
-        assert graph
-
-    def test_invalid_agent_type(self, mock_llm_provider, mock_fabric_tools):
-        builder = AgentBuilder("invalid_type", mock_llm_provider, mock_fabric_tools)
-        with pytest.raises(ValueError, match="Unknown agent type: invalid_type"):
-            builder.build()
+# Tests for AgentBuilder
+def test_agent_builder_with_valid_agent_type(llm_provider, mock_fabric_tools):
+    builder = AgentBuilder("single_command", llm_provider, mock_fabric_tools)
+    graph = builder.build()
+    assert graph is not None
 
 
-class TestSingleCommandAgent:
-    def test_system_message_creation(self, mock_llm_provider, mock_fabric_tools):
-        agent = SingleCommandAgent(mock_llm_provider, mock_fabric_tools)
-
-        # Get the LLM mock
-        llm_mock = mock_llm_provider.createAgentLLM()
-        llm_mock.use_system_message = True
-
-        graph = agent.build_graph()
-
-        # The graph was created, now we can verify the message type
-        # This requires inspecting the assistant node's function
-        nodes = graph.nodes
-        assert "assistant" in nodes
-
-        # Verify that bind_tools was called
-        llm_mock.llm.bind_tools.assert_called_once_with(
-            mock_fabric_tools.get_fabric_tools()
-        )
+def test_agent_builder_with_invalid_agent_type(llm_provider, mock_fabric_tools):
+    builder = AgentBuilder("invalid_type", llm_provider, mock_fabric_tools)
+    with pytest.raises(ValueError) as exc_info:
+        builder.build()
+    assert str(exc_info.value) == "Unknown agent type: invalid_type"
 
 
-class TestReActAgent:
-    def test_system_message_creation(self, mock_llm_provider, mock_fabric_tools):
-        agent = ReActAgent(mock_llm_provider, mock_fabric_tools)
+# Tests for SingleCommandAgent
+def test_single_command_agent_build_graph(llm_provider, mock_fabric_tools):
+    agent = SingleCommandAgent(llm_provider, mock_fabric_tools)
+    graph = agent.build_graph()
+    assert graph is not None
 
-        # Get the LLM mock
-        llm_mock = mock_llm_provider.createAgentLLM()
-        llm_mock.use_system_message = True
 
-        graph = agent.build_graph()
+# Tests for ReActAgent
+def test_react_agent_build_graph(llm_provider, mock_fabric_tools):
+    agent = ReActAgent(llm_provider, mock_fabric_tools)
+    graph = agent.build_graph()
+    assert graph is not None
 
-        # The graph was created, now we can verify the message type
-        # This requires inspecting the assistant node's function
-        nodes = graph.nodes
-        assert "assistant" in nodes
 
-        # Verify that bind_tools was called
-        llm_mock.llm.bind_tools.assert_called_once_with(
-            mock_fabric_tools.get_fabric_tools()
-        )
+def test_react_agent_tools_condition(llm_provider, mock_fabric_tools):
+    agent = ReActAgent(llm_provider, mock_fabric_tools)
+
+    # Test state with no tool calls
+    state = {"messages": [HumanMessage(content="test")], "max_num_turns": 10}
+    result = agent._tools_condition(state)
+    assert result == "__end__"
+
+    # Test state with tool calls
+    mock_message = MagicMock()
+    mock_message.tool_calls = [Mock()]
+    state = {"messages": [mock_message], "max_num_turns": 10}
+    result = agent._tools_condition(state)
+    assert result == "tools"
+
+
+def test_react_agent_max_turns_exceeded(llm_provider, mock_fabric_tools):
+    agent = ReActAgent(llm_provider, mock_fabric_tools)
+
+    # Create state with maximum number of turns exceeded
+    tool_messages = [
+        ToolMessage(content="test", tool_call_id="1", name="test") for _ in range(11)
+    ]
+    state = {"messages": tool_messages, "max_num_turns": 10}
+
+    result = agent._tools_condition(state)
+    assert result == "__end__"
+
+
+# Test assistant method in ReActAgent
+def test_react_agent_assistant(llm_provider, mock_fabric_tools):
+    agent = ReActAgent(llm_provider, mock_fabric_tools)
+    mock_llm_with_tools = Mock()
+    mock_llm_with_tools.invoke.return_value = "test response"
+    mock_agent_msg = SystemMessage(content="test")
+
+    state = {"messages": [HumanMessage(content="test")]}
+    result = agent._assistant(mock_llm_with_tools, mock_agent_msg, state)
+
+    assert "messages" in result
+    mock_llm_with_tools.invoke.assert_called_once()

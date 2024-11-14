@@ -33,7 +33,7 @@ inputs:
     required: false
     default: false
   agent_preamble:
-    description: 'Preamble that is added to the beginning of output'
+    description: 'Preamble added to the beginning of output'
     required: false
   fabric_provider:
     description: 'fabric provider name'
@@ -53,6 +53,10 @@ inputs:
   fabric_patterns_excluded:
     description: 'Comma separated list of fabric tools to exclude in agent'
     required: false
+  fabric_max_num_turns:
+    description: 'Maximum number of turns to LLM when running fabric patterns'
+    required: false
+    default: 10
   verbose:
     description: 'verbose messages'
     required: false

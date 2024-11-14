@@ -58,6 +58,10 @@ if [ -n "$INPUT_FABRIC_PATTERNS_EXCLUDED" ]; then
     ARGS="$ARGS --fabric-patterns-excluded $INPUT_FABRIC_PATTERNS_EXCLUDED"
 fi
 
+if [ -n "$INPUT_FABRIC_MAX_NUM_TURNS" ]; then
+    ARGS="$ARGS --fabric-max-num-turns $INPUT_FABRIC_MAX_NUM_TURNS"
+fi
+
 if [ "$INPUT_VERBOSE" = 'true' ]; then
     ARGS="$ARGS --verbose"
 fi

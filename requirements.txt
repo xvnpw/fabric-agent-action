@@ -7,3 +7,4 @@ langchain-core
 langchain-openai
 langchain-anthropic
 six
+pydantic

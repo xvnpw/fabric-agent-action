@@ -1,6 +1,7 @@
 import logging
+from typing import Literal
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 from fabric_agent_action.fabric_tools import FabricTools
@@ -75,10 +76,33 @@ class SingleCommandAgent(BaseAgent):
         return graph
 
 
+class ReActAgentState(MessagesState):
+    max_num_turns: int
+
+
 class ReActAgent(BaseAgent):
     def __init__(self, llm_provider: LLMProvider, fabric_tools):
         self.llm_provider = llm_provider
         self.fabric_tools = fabric_tools
+
+    def _assistant(self, llm_with_tools, agent_msg, state: ReActAgentState):
+        return {"messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]}
+
+    def _tools_condition(self, state: ReActAgentState) -> Literal["tools", "__end__"]:
+        messages = state.get("messages", [])
+
+        max_num_turns = state.get("max_num_turns", 10)
+        num_responses = len([m for m in messages if isinstance(m, ToolMessage)])
+        if num_responses >= max_num_turns:
+            logger.warning(
+                f"Exceeded maximum number of tools turns: {num_responses} >= {max_num_turns}"
+            )
+            return "__end__"
+
+        ai_message = messages[-1]
+        if hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0:
+            return "tools"
+        return "__end__"
 
     def build_graph(self):
         logger.debug(f"[{ReActAgent.__name__}] building graph...")
@@ -96,12 +120,13 @@ class ReActAgent(BaseAgent):
         else:
             agent_msg = HumanMessage(content=msg_content)
 
-        def assistant(state):
-            return {
-                "messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]
-            }
+        def assistant(state: ReActAgentState):
+            return self._assistant(llm_with_tools, agent_msg, state)
 
-        builder = StateGraph(MessagesState)
+        def tools_condition(state: ReActAgentState) -> Literal["tools", "__end__"]:
+            return self._tools_condition(state)
+
+        builder = StateGraph(ReActAgentState)
         builder.add_node("assistant", assistant)
         builder.add_node("tools", ToolNode(self.fabric_tools.get_fabric_tools()))
         builder.add_edge(START, "assistant")
