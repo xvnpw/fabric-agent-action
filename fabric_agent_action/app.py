@@ -1,46 +1,15 @@
 import argparse
-import io
 import logging
 import sys
-from typing import Optional, TextIO
-
-from langchain_core.messages import AIMessage, HumanMessage
-from pydantic import BaseModel, Field
-from typing_extensions import Literal
+from typing import TextIO
 
 from fabric_agent_action.agents import AgentBuilder
+from fabric_agent_action.config import AppConfig
 from fabric_agent_action.fabric_tools import FabricTools
+from fabric_agent_action.graphs import GraphExecutor
 from fabric_agent_action.llms import LLMProvider
 
 logger = logging.getLogger(__name__)
-
-
-class AppConfig(BaseModel):
-    """Configuration model with validation"""
-
-    input_file: io.TextIOWrapper
-    output_file: io.TextIOWrapper
-    verbose: bool = Field(default=False)
-    debug: bool = Field(default=False)
-    agent_provider: Literal["openai", "openrouter", "anthropic"] = Field(
-        default="openai"
-    )
-    agent_model: str = Field(default="gpt-4")
-    agent_temperature: float = Field(default=0, ge=0, le=1)
-    agent_preamble_enabled: bool = Field(default=False)
-    agent_preamble: str = Field(default="##### (🤖 AI Generated)")
-    fabric_provider: Literal["openai", "openrouter", "anthropic"] = Field(
-        default="openai"
-    )
-    fabric_model: str = Field(default="gpt-4")
-    fabric_temperature: float = Field(default=0, ge=0, le=1)
-    agent_type: Literal["single_command", "react"] = Field(default="single_command")
-    fabric_max_num_turns: int = Field(default=10, gt=0)
-    fabric_patterns_included: Optional[str] = None
-    fabric_patterns_excluded: Optional[str] = None
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 def setup_logging(verbose: bool, debug: bool) -> None:
@@ -231,57 +200,6 @@ def main() -> None:
                 config.input_file.close()
             if config.output_file and config.output_file is not sys.stdout:
                 config.output_file.close()
-
-
-class GraphExecutor:
-    def __init__(self, config: AppConfig):
-        self.config = config
-        self._setup_output_encoding()
-
-    def _setup_output_encoding(self) -> None:
-        if isinstance(self.config.output_file, io.TextIOWrapper):
-            try:
-                self.config.output_file.reconfigure(encoding="utf-8")
-            except Exception as e:
-                logger.warning(
-                    f"Could not set UTF-8 encoding: {e}. Falling back to system default."
-                )
-
-    def execute(self, graph, input_str: str) -> None:
-        try:
-            messages_state = self._invoke_graph(graph, input_str)
-
-            for msg in messages_state["messages"]:
-                logger.debug(f"Message: {msg.pretty_repr()}")
-
-            self._write_output(messages_state)
-        except Exception as e:
-            logger.error(f"Graph execution failed: {str(e)}")
-            raise
-
-    def _invoke_graph(self, graph, input_str: str) -> dict:
-        input_messages = [HumanMessage(content=input_str)]
-        return graph.invoke(
-            {
-                "messages": input_messages,
-                "max_num_turns": self.config.fabric_max_num_turns,
-            }
-        )
-
-    def _write_output(self, messages_state: dict) -> None:
-        last_message = messages_state["messages"][-1]
-        if not isinstance(last_message, AIMessage) or not last_message.content:
-            raise ValueError("Invalid or empty AI message")
-
-        content = self._format_output(last_message.content)
-        self.config.output_file.write(content)
-
-    def _format_output(self, content: str) -> str:
-        return (
-            f"{self.config.agent_preamble}\n\n{content}"
-            if self.config.agent_preamble_enabled
-            else content
-        )
 
 
 if __name__ == "__main__":
