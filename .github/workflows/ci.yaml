@@ -43,3 +43,14 @@ jobs:
         run: |
           docker build . -t test-fabric-agent-action
           docker run test-fabric-agent-action
+
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.0
+
+      - name: Bats tests
+        shell: bash
+        env:
+         BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+         TERM: xterm
+        run: bats bats/test-entrypoint.bats
