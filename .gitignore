@@ -164,3 +164,4 @@ cython_debug/
 /test*.txt
 
 .vscode/
+.ruff_cache
