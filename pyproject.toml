@@ -23,6 +23,7 @@ chardet = "^5.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
+ruff = "^0.7.3"
 
 [build-system]
 requires = ["poetry-core"]

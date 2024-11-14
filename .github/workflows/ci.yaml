@@ -25,9 +25,6 @@ jobs:
           poetry config virtualenvs.create false
           poetry install --no-root
 
-          # Install additional dev tools: ruff, pytest
-          poetry add --dev ruff pytest
-
       - name: Run Ruff
         run: poetry run ruff check --output-format=github .
 
