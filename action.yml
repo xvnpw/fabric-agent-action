@@ -68,15 +68,4 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  args:
-    - ${{ inputs.input_file }}
-    - ${{ inputs.output_file }}
-    - ${{ inputs.verbose }}
-    - ${{ inputs.debug }}
-    - ${{ inputs.agent_type }}
-    - ${{ inputs.agent_provider }}
-    - ${{ inputs.agent_model }}
-    - ${{ inputs.agent_temperature }}
-    - ${{ inputs.fabric_provider }}
-    - ${{ inputs.fabric_model }}
-    - ${{ inputs.fabric_temperature }}
+# no args - use environment variables to pass arguments
