@@ -6,7 +6,7 @@ from typing import TextIO
 from fabric_agent_action.agents import AgentBuilder
 from fabric_agent_action.config import AppConfig
 from fabric_agent_action.fabric_tools import FabricTools
-from fabric_agent_action.graphs import GraphExecutor
+from fabric_agent_action.graphs import GraphExecutorFactory
 from fabric_agent_action.llms import LLMProvider
 
 logger = logging.getLogger(__name__)
@@ -187,7 +187,7 @@ def main() -> None:
         agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
         graph = agent_builder.build()
 
-        executor = GraphExecutor(config)
+        executor = GraphExecutorFactory.create(config)
         executor.execute(graph, input_str)
 
         logger.info("Fabric Agent Action completed successfully")

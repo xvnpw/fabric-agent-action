@@ -1,101 +1,182 @@
-import io
 import pytest
 from unittest.mock import Mock
+import io
+from typing import Any
 from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.graph.state import CompiledStateGraph
 
-from fabric_agent_action.graphs import GraphExecutor
 from fabric_agent_action.config import AppConfig
+from fabric_agent_action.graphs import (
+    BaseGraphExecutor,
+    SingleCommandGraphExecutor,
+    ReActGraphExecutor,
+    GraphExecutorFactory,
+)
 
 
 @pytest.fixture
 def mock_config():
     config = Mock(spec=AppConfig)
     config.output_file = io.StringIO()
-    config.fabric_max_num_turns = 3
-    config.agent_preamble = "Agent:"
+    config.agent_preamble = "AI Assistant:"
     config.agent_preamble_enabled = True
+    config.fabric_max_num_turns = 5
+    config.agent_type = "single_command"
     return config
 
 
 @pytest.fixture
-def graph_executor(mock_config):
-    return GraphExecutor(mock_config)
+def mock_graph():
+    return Mock(spec=CompiledStateGraph)
 
 
 @pytest.fixture
-def mock_graph():
-    graph = Mock()
-    return graph
+def mock_messages_state():
+    return {"messages": [HumanMessage(content="Hello"), AIMessage(content="Hi there!")]}
 
 
-def test_execute_success(graph_executor, mock_graph):
-    mock_graph.invoke.return_value = {
-        "messages": [HumanMessage(content="Hello"), AIMessage(content="Response")]
-    }
+class TestBaseGraphExecutor:
+    class ConcreteExecutor(BaseGraphExecutor):
+        def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
+            pass
 
-    graph_executor.execute(mock_graph, "Hello")
+        def _invoke_graph(self, graph: CompiledStateGraph, input_str: str) -> Any:
+            pass
 
-    assert graph_executor.config.output_file.getvalue() == "Agent:\n\nResponse"
+        def _write_output(self, messages_state: Any) -> None:
+            pass
 
+    def test_format_output_with_preamble(self, mock_config):
+        executor = self.ConcreteExecutor(mock_config)
+        content = "Test message"
+        expected = f"{mock_config.agent_preamble}\n\n{content}"
+        assert executor._format_output(content) == expected
 
-def test_execute_with_preamble_disabled(mock_config, mock_graph):
-    mock_config.agent_preamble_enabled = False
-    executor = GraphExecutor(mock_config)
-
-    mock_graph.invoke.return_value = {
-        "messages": [HumanMessage(content="Hello"), AIMessage(content="Response")]
-    }
-
-    executor.execute(mock_graph, "Hello")
-    assert executor.config.output_file.getvalue() == "Response"
-
-
-def test_execute_with_empty_ai_message(graph_executor, mock_graph):
-    mock_graph.invoke.return_value = {
-        "messages": [HumanMessage(content="Hello"), AIMessage(content="")]
-    }
-
-    with pytest.raises(ValueError, match="Invalid or empty AI message"):
-        graph_executor.execute(mock_graph, "Hello")
+    def test_format_output_without_preamble(self, mock_config):
+        mock_config.agent_preamble_enabled = False
+        executor = self.ConcreteExecutor(mock_config)
+        content = "Test message"
+        assert executor._format_output(content) == content
 
 
-def test_execute_with_non_ai_message(graph_executor, mock_graph):
-    mock_graph.invoke.return_value = {
-        "messages": [HumanMessage(content="Hello"), HumanMessage(content="Response")]
-    }
+class TestSingleCommandGraphExecutor:
+    def test_invoke_graph(self, mock_config, mock_graph):
+        executor = SingleCommandGraphExecutor(mock_config)
+        input_str = "Hello"
+        executor._invoke_graph(mock_graph, input_str)
+        mock_graph.invoke.assert_called_once()
 
-    with pytest.raises(ValueError, match="Invalid or empty AI message"):
-        graph_executor.execute(mock_graph, "Hello")
-
-
-def test_execute_graph_failure(graph_executor, mock_graph):
-    mock_graph.invoke.side_effect = Exception("Graph execution failed")
-
-    with pytest.raises(Exception, match="Graph execution failed"):
-        graph_executor.execute(mock_graph, "Hello")
+    def test_write_output(self, mock_config, mock_messages_state):
+        executor = SingleCommandGraphExecutor(mock_config)
+        executor._write_output(mock_messages_state)
+        assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nHi there!"
 
 
-def test_invoke_graph_parameters(graph_executor, mock_graph):
-    input_str = "Hello"
-    graph_executor._invoke_graph(mock_graph, input_str)
+class TestReActGraphExecutor:
+    def test_invoke_graph(self, mock_config, mock_graph):
+        mock_config.agent_type = "react"
+        executor = ReActGraphExecutor(mock_config)
+        input_str = "Hello"
+        executor._invoke_graph(mock_graph, input_str)
+        mock_graph.invoke.assert_called_once()
 
-    mock_graph.invoke.assert_called_once()
-    call_args = mock_graph.invoke.call_args[0][0]
+    def test_write_output_valid_message(self, mock_config, mock_messages_state):
+        executor = ReActGraphExecutor(mock_config)
+        executor._write_output(mock_messages_state)
+        assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nHi there!"
 
-    assert isinstance(call_args["messages"][0], HumanMessage)
-    assert call_args["messages"][0].content == input_str
-    assert call_args["max_num_turns"] == graph_executor.config.fabric_max_num_turns
+    def test_write_output_invalid_message(self, mock_config):
+        executor = ReActGraphExecutor(mock_config)
+        invalid_state = {"messages": [HumanMessage(content="Hello")]}
+        with pytest.raises(ValueError, match="Invalid or empty AI message"):
+            executor._write_output(invalid_state)
+
+    def test_max_num_turns_passed_to_graph(self, mock_config, mock_graph):
+        mock_config.agent_type = "react"
+        mock_config.fabric_max_num_turns = 10
+        executor = ReActGraphExecutor(mock_config)
+
+        executor._invoke_graph(mock_graph, "Test input")
+
+        mock_graph.invoke.assert_called_once_with(
+            {"messages": [HumanMessage(content="Test input")], "max_num_turns": 10}
+        )
+
+    def test_max_num_turns_zero(self, mock_config, mock_graph):
+        mock_config.agent_type = "react"
+        mock_config.fabric_max_num_turns = 0
+        executor = ReActGraphExecutor(mock_config)
+
+        executor._invoke_graph(mock_graph, "Test input")
+
+        mock_graph.invoke.assert_called_once_with(
+            {"messages": [HumanMessage(content="Test input")], "max_num_turns": 0}
+        )
 
 
-def test_format_output_with_preamble(graph_executor):
-    content = "Test content"
-    formatted = graph_executor._format_output(content)
-    assert formatted == f"{graph_executor.config.agent_preamble}\n\n{content}"
+class TestGraphExecutorFactory:
+    def test_create_single_command_executor(self, mock_config):
+        executor = GraphExecutorFactory.create(mock_config)
+        assert isinstance(executor, SingleCommandGraphExecutor)
+
+    def test_create_react_executor(self, mock_config):
+        mock_config.agent_type = "react"
+        executor = GraphExecutorFactory.create(mock_config)
+        assert isinstance(executor, ReActGraphExecutor)
+
+    def test_create_unknown_executor(self, mock_config):
+        mock_config.agent_type = "unknown"
+        with pytest.raises(ValueError, match="Unknown agent type: unknown"):
+            GraphExecutorFactory.create(mock_config)
 
 
-def test_format_output_without_preamble(mock_config):
-    mock_config.agent_preamble_enabled = False
-    executor = GraphExecutor(mock_config)
-    content = "Test content"
-    formatted = executor._format_output(content)
-    assert formatted == content
+class TestGraphExecutorIntegration:
+    def test_single_command_execution_flow(self, mock_config, mock_graph):
+        executor = SingleCommandGraphExecutor(mock_config)
+        mock_graph.invoke.return_value = {
+            "messages": [
+                HumanMessage(content="Test input"),
+                AIMessage(content="Test response"),
+            ]
+        }
+
+        executor.execute(mock_graph, "Test input")
+        assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nTest response"
+
+    def test_react_execution_flow(self, mock_config, mock_graph):
+        mock_config.agent_type = "react"
+        executor = ReActGraphExecutor(mock_config)
+        mock_graph.invoke.return_value = {
+            "messages": [
+                HumanMessage(content="Test input"),
+                AIMessage(content="Test response"),
+            ]
+        }
+
+        executor.execute(mock_graph, "Test input")
+        assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nTest response"
+
+    def test_react_execution_flow_with_max_turns(self, mock_config, mock_graph):
+        mock_config.agent_type = "react"
+        mock_config.fabric_max_num_turns = 3
+        executor = ReActGraphExecutor(mock_config)
+
+        # Simulate a conversation with multiple turns
+        mock_graph.invoke.return_value = {
+            "messages": [
+                HumanMessage(content="Test input"),
+                AIMessage(content="Intermediate response"),
+                HumanMessage(content="Follow-up"),
+                AIMessage(content="Final response"),
+            ]
+        }
+
+        executor.execute(mock_graph, "Test input")
+
+        # Verify max_num_turns was passed correctly
+        mock_graph.invoke.assert_called_once_with(
+            {"messages": [HumanMessage(content="Test input")], "max_num_turns": 3}
+        )
+
+        # Verify final output
+        assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nFinal response"

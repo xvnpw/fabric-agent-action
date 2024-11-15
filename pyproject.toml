@@ -36,3 +36,6 @@ python_version = "3.11"
 strict = true
 show_error_codes = true
 ignore_missing_imports = true
+
+[tool.black]
+line-length = 119

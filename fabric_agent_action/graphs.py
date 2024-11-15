@@ -1,8 +1,9 @@
 import io
 import logging
-from typing import Any, Type, Union
+from abc import ABC, abstractmethod
+from typing import Any, Final, Type
 
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 
 from fabric_agent_action.config import AppConfig
@@ -10,33 +11,32 @@ from fabric_agent_action.config import AppConfig
 logger = logging.getLogger(__name__)
 
 
-class BaseGraphExecutor:
-    """Base class for all graph executors"""
+class BaseGraphExecutor(ABC):
+    """Abstract base class for all graph executors."""
 
     def __init__(self, config: AppConfig) -> None:
-        self.config = config
+        self.config: Final[AppConfig] = config
+        self._setup_output_encoding()
 
+    @abstractmethod
     def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
+    def _invoke_graph(self, graph: CompiledStateGraph, input_str: str) -> Any:
+        pass
+
+    @abstractmethod
     def _write_output(self, messages_state: Any) -> None:
-        raise NotImplementedError
-
-    def _invoke_graph(
-        self, graph: CompiledStateGraph, input_str: str
-    ) -> Union[dict[str, Any], Any]:
-        raise NotImplementedError
+        pass
 
     def _execute(self, graph: CompiledStateGraph, input_str: str) -> None:
         try:
             messages_state = self._invoke_graph(graph, input_str)
-
-            for msg in messages_state["messages"]:
-                logger.debug(f"Message: {msg.pretty_repr()}")
-
+            self._log_messages(messages_state)
             self._write_output(messages_state)
         except Exception as e:
-            logger.error(f"Graph execution failed: {str(e)}")
+            logger.error("Graph execution failed: %s", str(e))
             raise
 
     def _setup_output_encoding(self) -> None:
@@ -45,75 +45,49 @@ class BaseGraphExecutor:
                 self.config.output_file.reconfigure(encoding="utf-8")
             except Exception as e:
                 logger.warning(
-                    f"Could not set UTF-8 encoding: {e}. Falling back to system default."
+                    "Could not set UTF-8 encoding: %s. Falling back to system default.",
+                    str(e),
                 )
 
     def _format_output(self, content: str) -> str:
-        return (
-            f"{self.config.agent_preamble}\n\n{content}"
-            if self.config.agent_preamble_enabled
-            else content
-        )
+        if not self.config.agent_preamble_enabled:
+            return content
+        return f"{self.config.agent_preamble}\n\n{content}"
 
-
-class GraphExecutorBuilder:
-    def __init__(self, config: AppConfig) -> None:
-        self.config = config
-        self.agent_type = config.agent_type
-
-        self._executors: dict[str, Type[BaseGraphExecutor]] = {
-            "single_command": SingleCommandGraphExecutor,
-            "react": ReActGraphExecutor,
-        }
-
-    def build(self) -> BaseGraphExecutor:
-        executor_class = self._executors.get(self.agent_type)
-        if not executor_class:
-            raise ValueError(f"Unknown agent type: {self.agent_type}")
-
-        return executor_class(self.config)
+    def _log_messages(self, messages_state: dict[str, list[BaseMessage]]) -> None:
+        """Log all messages for debugging."""
+        for msg in messages_state["messages"]:
+            logger.debug("Message: %s", msg.pretty_repr())
 
 
 class SingleCommandGraphExecutor(BaseGraphExecutor):
-    def __init__(self, config: AppConfig):
-        self.config = config
-        self._setup_output_encoding()
+    """Executor for single command graphs."""
 
     def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
         self._execute(graph, input_str)
 
-    def _invoke_graph(
-        self, graph: CompiledStateGraph, input_str: str
-    ) -> Union[dict[str, Any], Any]:
-        input_messages = [HumanMessage(content=input_str)]
-        return graph.invoke(
-            {
-                "messages": input_messages,
-            }
-        )
+    def _invoke_graph(self, graph: CompiledStateGraph, input_str: str) -> Any:
+        return graph.invoke({"messages": [HumanMessage(content=input_str)]})
 
     def _write_output(self, messages_state: Any) -> None:
         last_message = messages_state["messages"][-1]
 
-        content = self._format_output(last_message.content)
+        content = self._format_output(
+            last_message.content if isinstance(last_message.content, str) else str(last_message.content)
+        )
         self.config.output_file.write(content)
 
 
 class ReActGraphExecutor(BaseGraphExecutor):
-    def __init__(self, config: AppConfig):
-        self.config = config
-        self._setup_output_encoding()
+    """Executor for ReAct-style graphs."""
 
     def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
         self._execute(graph, input_str)
 
-    def _invoke_graph(
-        self, graph: CompiledStateGraph, input_str: str
-    ) -> Union[dict[str, Any], Any]:
-        input_messages = [HumanMessage(content=input_str)]
+    def _invoke_graph(self, graph: CompiledStateGraph, input_str: str) -> Any:
         return graph.invoke(
             {
-                "messages": input_messages,
+                "messages": [HumanMessage(content=input_str)],
                 "max_num_turns": self.config.fabric_max_num_turns,
             }
         )
@@ -124,8 +98,22 @@ class ReActGraphExecutor(BaseGraphExecutor):
             raise ValueError("Invalid or empty AI message")
 
         content = self._format_output(
-            last_message.content
-            if isinstance(last_message.content, str)
-            else str(last_message.content)
+            last_message.content if isinstance(last_message.content, str) else str(last_message.content)
         )
         self.config.output_file.write(content)
+
+
+class GraphExecutorFactory:
+    """Factory for creating graph executors."""
+
+    _EXECUTOR_MAP: Final[dict[str, Type[BaseGraphExecutor]]] = {
+        "single_command": SingleCommandGraphExecutor,
+        "react": ReActGraphExecutor,
+    }
+
+    @classmethod
+    def create(cls, config: AppConfig) -> BaseGraphExecutor:
+        executor_class = cls._EXECUTOR_MAP.get(config.agent_type)
+        if not executor_class:
+            raise ValueError(f"Unknown agent type: {config.agent_type}")
+        return executor_class(config)
