@@ -268,11 +268,11 @@ Improved Writing:
 
 You have two ways to gain insights into the internal workings of the system.
 
-### 1. Debug Argument
+### Debug Argument
 
 Enable the `debug` mode by setting the `debug` argument to `true`. This will provide more detailed information about the process.
 
-### 2. LangSmith
+### LangSmith
 
 [LangSmith](https://www.langchain.com/langsmith) offers a free tier that lets you visually track interactions between agents and LLMs, making debugging easier.
 
