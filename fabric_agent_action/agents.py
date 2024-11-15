@@ -63,7 +63,7 @@ class RouterAgent(BaseAgent):
         )
 
         def assistant(state: MessagesState):  # type: ignore[no-untyped-def]
-            return {"messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]}
+            return {"messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]} # type: ignore[operator]
 
         builder = StateGraph(MessagesState)
         builder.add_node("assistant", assistant)
