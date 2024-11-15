@@ -78,9 +78,7 @@ def test_get_llm_instance_special_model_config(mock_env, llm_provider):
 
 
 def test_get_llm_instance_invalid_provider(mock_env, llm_provider):
-    config = LLMConfig(
-        provider="invalid_provider", model="gpt-4", temperature=0.7  # type: ignore
-    )
+    config = LLMConfig(provider="invalid_provider", model="gpt-4", temperature=0.7)  # type: ignore
 
     with pytest.raises(ValueError, match="Unsupported provider: invalid_provider"):
         llm_provider._get_llm_instance(config)
@@ -118,9 +116,7 @@ def test_create_fabric_llm(mock_env, llm_provider):
         ("openai", "gpt-4", 1000, True),
     ],
 )
-def test_model_configurations(
-    mock_env, llm_provider, provider, model, expected_tools, expected_system_message
-):
+def test_model_configurations(mock_env, llm_provider, provider, model, expected_tools, expected_system_message):
     config = LLMConfig(provider=provider, model=model, temperature=0.7)
 
     llm = llm_provider._get_llm_instance(config)

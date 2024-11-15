@@ -23,18 +23,12 @@ class FabricToolsFilter:
         else:
             return []
 
-    def get_fabric_tools_list(
-        self, fabric_tools: list[Callable[[str], str]]
-    ) -> list[Callable[[str], str]]:
+    def get_fabric_tools_list(self, fabric_tools: list[Callable[[str], str]]) -> list[Callable[[str], str]]:
         if self.included:
-            included_tools = [
-                tool for tool in fabric_tools if tool.__name__ in self.included
-            ]
+            included_tools = [tool for tool in fabric_tools if tool.__name__ in self.included]
             return included_tools
         elif self.excluded:
-            excluded_tools = [
-                tool for tool in fabric_tools if tool.__name__ not in self.excluded
-            ]
+            excluded_tools = [tool for tool in fabric_tools if tool.__name__ not in self.excluded]
             return excluded_tools
         else:
             return fabric_tools
@@ -1508,9 +1502,7 @@ class FabricTools:
         return self.invoke_llm(input, "write_semgrep_rule")
 
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
-        filtered_tools = self.tools_filter.get_fabric_tools_list(
-            self._get_fabric_tools()
-        )
+        filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
             raise ValueError(
                 f"Model supporting only {self.max_number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-patterns-include/--fabric-patterns-exclude or different model."

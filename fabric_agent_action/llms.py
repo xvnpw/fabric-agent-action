@@ -64,13 +64,9 @@ class LLMProvider:
         }
         self._model_configs: dict[str, ModelConfig] = {
             "gpt-4o": ModelConfig(max_number_of_tools=128, use_system_message=True),
-            "openai/o1-preview": ModelConfig(
-                max_number_of_tools=256, use_system_message=False
-            ),
+            "openai/o1-preview": ModelConfig(max_number_of_tools=256, use_system_message=False),
         }
-        self._default_model_config = ModelConfig(
-            max_number_of_tools=1000, use_system_message=True
-        )
+        self._default_model_config = ModelConfig(max_number_of_tools=1000, use_system_message=True)
 
     def _get_llm_instance(self, llm_config: LLMConfig) -> LLM:
         provider_config = self._provider_configs.get(llm_config.provider)
@@ -83,16 +79,12 @@ class LLMProvider:
             print(f"{provider_config.env_key} not set in env")
             sys.exit(1)
 
-        model_config = self._model_configs.get(
-            llm_config.model, self._default_model_config
-        )
+        model_config = self._model_configs.get(llm_config.model, self._default_model_config)
 
         logger.debug(f"[{llm_config.provider}] model config: {model_config}")
 
         # Log configuration
-        logger.debug(
-            f"using {llm_config.provider} provider with model={llm_config.model}"
-        )
+        logger.debug(f"using {llm_config.provider} provider with model={llm_config.model}")
 
         # Create kwargs based on provider type
         if provider_config.model_class == ChatOpenAI:

@@ -203,9 +203,7 @@ def test_read_fabric_pattern_on_not_exist(llm):
 
 def test_invoke_llm(llm):
     fabric_tools = FabricTools(llm)
-    fabric_output = fabric_tools.invoke_llm(
-        "create quiz for me about hammer", "create_quiz"
-    )
+    fabric_output = fabric_tools.invoke_llm("create quiz for me about hammer", "create_quiz")
     assert "create quiz for me about hammer" in fabric_output
 
 
@@ -218,9 +216,7 @@ def test_invoke_llm(llm):
     ],
 )
 def test_fabric_tools_filter(llm, included, excluded, tools_count):
-    fabric_tools = FabricTools(
-        llm, max_number_of_tools=1000, included_tools=included, excluded_tools=excluded
-    )
+    fabric_tools = FabricTools(llm, max_number_of_tools=1000, included_tools=included, excluded_tools=excluded)
     tools = fabric_tools.get_fabric_tools()
     assert len(tools) == tools_count
 
