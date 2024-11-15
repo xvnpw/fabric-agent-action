@@ -234,7 +234,7 @@ graph TD;
         classDef last fill:#bfb6fc
 ```
 
-Use `fabric_max_num_turns` to limit number of turns to LLM.
+Use `fabric_max_num_turns` to limit number of turns to LLM for pattern processing (=tools node).
 
 This approach follows the intuition behind [ReAct](https://react-lm.github.io/):
 
@@ -263,6 +263,23 @@ Cleaned Text:
 Improved Writing:
 "I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results."
 ```
+
+## Debugging
+
+You have two ways to gain insights into the internal workings of the system.
+
+### 1. Debug Argument
+
+Enable the `debug` mode by setting the `debug` argument to `true`. This will provide more detailed information about the process.
+
+### 2. LangSmith
+
+[LangSmith](https://www.langchain.com/langsmith) offers a free tier that lets you visually track interactions between agents and LLMs, making debugging easier.
+
+To use LangSmith, set the following environment variables:
+
+- `LANGCHAIN_API_KEY`: `${{ secrets.LANGCHAIN_API_KEY }}`
+- `LANGCHAIN_TRACING_V2`: `true`
 
 ## Supported LLM Providers
 
