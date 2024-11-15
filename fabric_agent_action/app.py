@@ -102,9 +102,9 @@ def parse_arguments() -> AppConfig:
     agent_group.add_argument(
         "--agent-type",
         type=str,
-        choices=["single_command", "react"],
-        default="single_command",
-        help="Type of agent (default: single_command)",
+        choices=["router", "react"],
+        default="router",
+        help="Type of agent (default: router)",
     )
     agent_group.add_argument(
         "--agent-preamble-enabled",

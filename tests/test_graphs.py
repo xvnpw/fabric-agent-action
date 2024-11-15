@@ -8,7 +8,7 @@ from langgraph.graph.state import CompiledStateGraph
 from fabric_agent_action.config import AppConfig
 from fabric_agent_action.graphs import (
     BaseGraphExecutor,
-    SingleCommandGraphExecutor,
+    RouterGraphExecutor,
     ReActGraphExecutor,
     GraphExecutorFactory,
 )
@@ -21,7 +21,7 @@ def mock_config():
     config.agent_preamble = "AI Assistant:"
     config.agent_preamble_enabled = True
     config.fabric_max_num_turns = 5
-    config.agent_type = "single_command"
+    config.agent_type = "router"
     return config
 
 
@@ -59,15 +59,15 @@ class TestBaseGraphExecutor:
         assert executor._format_output(content) == content
 
 
-class TestSingleCommandGraphExecutor:
+class TestRouterGraphExecutor:
     def test_invoke_graph(self, mock_config, mock_graph):
-        executor = SingleCommandGraphExecutor(mock_config)
+        executor = RouterGraphExecutor(mock_config)
         input_str = "Hello"
         executor._invoke_graph(mock_graph, input_str)
         mock_graph.invoke.assert_called_once()
 
     def test_write_output(self, mock_config, mock_messages_state):
-        executor = SingleCommandGraphExecutor(mock_config)
+        executor = RouterGraphExecutor(mock_config)
         executor._write_output(mock_messages_state)
         assert mock_config.output_file.getvalue() == f"{mock_config.agent_preamble}\n\nHi there!"
 
@@ -115,9 +115,9 @@ class TestReActGraphExecutor:
 
 
 class TestGraphExecutorFactory:
-    def test_create_single_command_executor(self, mock_config):
+    def test_create_router_executor(self, mock_config):
         executor = GraphExecutorFactory.create(mock_config)
-        assert isinstance(executor, SingleCommandGraphExecutor)
+        assert isinstance(executor, RouterGraphExecutor)
 
     def test_create_react_executor(self, mock_config):
         mock_config.agent_type = "react"
@@ -131,8 +131,8 @@ class TestGraphExecutorFactory:
 
 
 class TestGraphExecutorIntegration:
-    def test_single_command_execution_flow(self, mock_config, mock_graph):
-        executor = SingleCommandGraphExecutor(mock_config)
+    def test_router_execution_flow(self, mock_config, mock_graph):
+        executor = RouterGraphExecutor(mock_config)
         mock_graph.invoke.return_value = {
             "messages": [
                 HumanMessage(content="Test input"),

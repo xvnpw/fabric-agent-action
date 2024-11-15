@@ -9,7 +9,7 @@ setup() {
   run docker run --rm \
     -e INPUT_INPUT_FILE="entrypoint.sh" \
     -e INPUT_OUTPUT_FILE="test_output.txt" \
-    -e INPUT_AGENT_TYPE=single_command \
+    -e INPUT_AGENT_TYPE=router \
     -e INPUT_AGENT_PROVIDER=openrouter \
     -e INPUT_AGENT_MODEL=test_model \
     -e INPUT_AGENT_TEMPERATURE=0.7 \
@@ -29,7 +29,7 @@ setup() {
 
   # Check for expected output
   [[ "$output" =~ "-i 'entrypoint.sh' -o 'test_output.txt'" ]]
-  [[ "$output" =~ "--agent-type 'single_command'" ]]
+  [[ "$output" =~ "--agent-type 'router'" ]]
   [[ "$output" =~ "--agent-provider 'openrouter'" ]]
   [[ "$output" =~ "--agent-model 'test_model'" ]]
   [[ "$output" =~ "--agent-temperature '0.7'" ]]

@@ -24,15 +24,13 @@ class BaseAgent:
 
 
 class AgentBuilder:
-    def __init__(
-        self, agent_type: str, llm_provider: LLMProvider, fabric_tools: FabricTools
-    ) -> None:
+    def __init__(self, agent_type: str, llm_provider: LLMProvider, fabric_tools: FabricTools) -> None:
         self.agent_type = agent_type
         self.llm_provider = llm_provider
         self.fabric_tools = fabric_tools
 
         self._agents: dict[str, Type[BaseAgent]] = {
-            "single_command": SingleCommandAgent,
+            "router": RouterAgent,
             "react": ReActAgent,
         }
 
@@ -45,12 +43,12 @@ class AgentBuilder:
         return agent_class(self.llm_provider, self.fabric_tools).build_graph()
 
 
-class SingleCommandAgent(BaseAgent):
+class RouterAgent(BaseAgent):
     def __init__(self, llm_provider: LLMProvider, fabric_tools: FabricTools) -> None:
         super().__init__(llm_provider, fabric_tools)
 
     def build_graph(self) -> CompiledStateGraph:
-        logger.debug(f"[{SingleCommandAgent.__name__}] building graph...")
+        logger.debug(f"[{RouterAgent.__name__}] building graph...")
 
         llm = self.llm_provider.createAgentLLM()
         llm_with_tools = llm.llm.bind_tools(self.fabric_tools.get_fabric_tools())
@@ -61,15 +59,11 @@ class SingleCommandAgent(BaseAgent):
         """
 
         agent_msg: Union[SystemMessage, HumanMessage] = (
-            SystemMessage(content=msg_content)
-            if llm.use_system_message
-            else HumanMessage(content=msg_content)
+            SystemMessage(content=msg_content) if llm.use_system_message else HumanMessage(content=msg_content)
         )
 
         def assistant(state: MessagesState):  # type: ignore[no-untyped-def]
-            return {
-                "messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]  # type: ignore[operator]
-            }
+            return {"messages": [llm_with_tools.invoke([agent_msg] + state["messages"])]}  # type: ignore[operator]
 
         builder = StateGraph(MessagesState)
         builder.add_node("assistant", assistant)
@@ -104,9 +98,7 @@ class ReActAgent(BaseAgent):
         max_num_turns = state.get("max_num_turns", 10)
         num_responses = len([m for m in messages if isinstance(m, ToolMessage)])
         if num_responses >= max_num_turns:
-            logger.warning(
-                f"Exceeded maximum number of tools turns: {num_responses} >= {max_num_turns}"
-            )
+            logger.warning(f"Exceeded maximum number of tools turns: {num_responses} >= {max_num_turns}")
             return "__end__"
 
         ai_message = messages[-1]
@@ -126,9 +118,7 @@ class ReActAgent(BaseAgent):
         """
 
         agent_msg: Union[SystemMessage, HumanMessage] = (
-            SystemMessage(content=msg_content)
-            if llm.use_system_message
-            else HumanMessage(content=msg_content)
+            SystemMessage(content=msg_content) if llm.use_system_message else HumanMessage(content=msg_content)
         )
 
         def assistant(state: ReActAgentState):  # type: ignore[no-untyped-def]

@@ -60,7 +60,7 @@ class BaseGraphExecutor(ABC):
             logger.debug("Message: %s", msg.pretty_repr())
 
 
-class SingleCommandGraphExecutor(BaseGraphExecutor):
+class RouterGraphExecutor(BaseGraphExecutor):
     """Executor for single command graphs."""
 
     def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
@@ -107,7 +107,7 @@ class GraphExecutorFactory:
     """Factory for creating graph executors."""
 
     _EXECUTOR_MAP: Final[dict[str, Type[BaseGraphExecutor]]] = {
-        "single_command": SingleCommandGraphExecutor,
+        "router": RouterGraphExecutor,
         "react": ReActGraphExecutor,
     }
 

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 
-from fabric_agent_action.agents import AgentBuilder, ReActAgent, SingleCommandAgent
+from fabric_agent_action.agents import AgentBuilder, ReActAgent, RouterAgent
 from fabric_agent_action.fabric_tools import FabricTools
 
 
@@ -34,7 +34,7 @@ def mock_fabric_tools():
 
 # Tests for AgentBuilder
 def test_agent_builder_with_valid_agent_type(llm_provider, mock_fabric_tools):
-    builder = AgentBuilder("single_command", llm_provider, mock_fabric_tools)
+    builder = AgentBuilder("router", llm_provider, mock_fabric_tools)
     graph = builder.build()
     assert graph is not None
 
@@ -46,9 +46,9 @@ def test_agent_builder_with_invalid_agent_type(llm_provider, mock_fabric_tools):
     assert str(exc_info.value) == "Unknown agent type: invalid_type"
 
 
-# Tests for SingleCommandAgent
-def test_single_command_agent_build_graph(llm_provider, mock_fabric_tools):
-    agent = SingleCommandAgent(llm_provider, mock_fabric_tools)
+# Tests for RouterAgent
+def test_router_agent_build_graph(llm_provider, mock_fabric_tools):
+    agent = RouterAgent(llm_provider, mock_fabric_tools)
     graph = agent.build_graph()
     assert graph is not None
 
@@ -80,9 +80,7 @@ def test_react_agent_max_turns_exceeded(llm_provider, mock_fabric_tools):
     agent = ReActAgent(llm_provider, mock_fabric_tools)
 
     # Create state with maximum number of turns exceeded
-    tool_messages = [
-        ToolMessage(content="test", tool_call_id="1", name="test") for _ in range(11)
-    ]
+    tool_messages = [ToolMessage(content="test", tool_call_id="1", name="test") for _ in range(11)]
     state = {"messages": tool_messages, "max_num_turns": 10}
 
     result = agent._tools_condition(state)

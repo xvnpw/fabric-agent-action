@@ -13,9 +13,9 @@ inputs:
     description: 'path to output file'
     required: true
   agent_type:
-    description: 'type of agent, one of single_command, react'
+    description: 'type of agent, one of router, react'
     required: false
-    default: 'single_command'
+    default: 'router'
   agent_provider:
     description: 'agent provider name'
     required: false

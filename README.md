@@ -8,7 +8,7 @@
 
 - **Seamless Integration:** Easily incorporate the action into your existing workflows without additional setup.
 - **Multi-Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference and availability.
-- **Configurable Agent Behavior:** Select agent types (`single_command` or `react`) and customize their behavior to suit your workflow needs.
+- **Configurable Agent Behavior:** Select agent types (`router` or `react`) and customize their behavior to suit your workflow needs.
 - **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and comply with model limitations.
 
 ## Setup
@@ -48,7 +48,7 @@ Use workflow conditions to limit who can run this action:
 | `output_file` | **Required** Destination file for pattern results | |
 | `verbose` | Enable INFO level logging | `false` |
 | `debug` | Enable DEBUG level logging | `false` |
-| `agent_type` | Agent behavior model (`single_command`/`react`) | `single_command` |
+| `agent_type` | Agent behavior model (`router`/`react`) | `router` |
 | `agent_provider` | LLM provider for agent (`openai`/`openrouter`/`anthropic`) | `openai` |
 | `agent_model` | Model name for agent | `gpt-4o` |
 | `agent_temperature` | Model creativity (0-1) for agent | `0` |
@@ -121,7 +121,7 @@ jobs:
               repo: context.repo.repo
             });
 
-            const input = `${comment.data.body}\n\nGitHub issue:\n${issue.data.body}`;
+            const input = `${comment.data.body}\n\n${issue.data.body}`;
             require('fs').writeFileSync('fabric_input.md', input);
 
             return input;
@@ -159,7 +159,7 @@ In this workflow:
 | --- | --- |
 | Create a pull request on changes in `README.md` to run the [improve_writing pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/improve_writing/system.md) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/4), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-readme-pr.yml) |
 | Create a pull request on changes in the `docs/` directory to run the `improve_writing` pattern | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/8), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-docs-pr.yml) |
-| Run fabric patterns from issue comments using the [single_command agent](#single_command-agent) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/5), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-single-command.yml) |
+| Run fabric patterns from issue comments using the [router agent](#router-agent) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/5), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-router.yml) |
 | Run fabric patterns from issue comments using the [react agent](#react-agent) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/6), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react.yml) |
 | Automatically run the fabric [write_pull_request pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md) on pull requests | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/7), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-diff.yml) |
 
@@ -178,7 +178,7 @@ quadrantChart
 
 In practice, there's often a trade-off between autonomy and reliability. Increasing LLM autonomy can sometimes reduce reliability due to factors like non-determinism or errors in tool selection.
 
-### `single_command` Agent
+### `router` Agent
 
 Executes a single pattern selection with direct output:
 
