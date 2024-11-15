@@ -47,7 +47,7 @@ def create_tool_code(pattern_name, pattern_content, output_file):
 
         FORMATTING
 
-        def function_name(self, input: str):
+        def function_name(self, input: str) -> str:
             \"""Tool description
 
             Args:

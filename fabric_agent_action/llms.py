@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Type, Optional, Any
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -29,37 +29,48 @@ class LLMConfig:
     temperature: float
 
 
+@dataclass(frozen=True)
+class ProviderConfig:
+    env_key: str
+    api_base: Optional[str]
+    model_class: Type[BaseChatModel]
+
+
+@dataclass(frozen=True)
+class ModelConfig:
+    max_number_of_tools: int
+    use_system_message: bool
+
+
 class LLMProvider:
-    def __init__(self, config):
+    def __init__(self, config: Any) -> None:
         self.config = config
-        self._provider_configs = {
-            "openrouter": {
-                "env_key": constants.OPENROUTER_API_KEY,
-                "api_base": constants.OPENROUTER_API_BASE,
-                "class": ChatOpenAI,
-            },
-            "openai": {
-                "env_key": constants.OPENAI_API_KEY,
-                "api_base": None,
-                "class": ChatOpenAI,
-            },
-            "anthropic": {
-                "env_key": constants.ANTHROPIC_API_KEY,
-                "api_base": None,
-                "class": ChatAnthropic,
-            },
+        self._provider_configs: dict[str, ProviderConfig] = {
+            "openrouter": ProviderConfig(
+                env_key=constants.OPENROUTER_API_KEY,
+                api_base=constants.OPENROUTER_API_BASE,
+                model_class=ChatOpenAI,
+            ),
+            "openai": ProviderConfig(
+                env_key=constants.OPENAI_API_KEY,
+                api_base=None,
+                model_class=ChatOpenAI,
+            ),
+            "anthropic": ProviderConfig(
+                env_key=constants.ANTHROPIC_API_KEY,
+                api_base=None,
+                model_class=ChatAnthropic,
+            ),
         }
-        self._model_configs = {
-            "gpt-4o": {"max_number_of_tools": 128, "use_system_message": True},
-            "openai/o1-preview": {
-                "max_number_of_tools": 256,
-                "use_system_message": False,
-            },
+        self._model_configs: dict[str, ModelConfig] = {
+            "gpt-4o": ModelConfig(max_number_of_tools=128, use_system_message=True),
+            "openai/o1-preview": ModelConfig(
+                max_number_of_tools=256, use_system_message=False
+            ),
         }
-        self._default_model_config = {
-            "max_number_of_tools": None,
-            "use_system_message": True,
-        }
+        self._default_model_config = ModelConfig(
+            max_number_of_tools=1000, use_system_message=True
+        )
 
     def _get_llm_instance(self, llm_config: LLMConfig) -> LLM:
         provider_config = self._provider_configs.get(llm_config.provider)
@@ -67,15 +78,14 @@ class LLMProvider:
             raise ValueError(f"Unsupported provider: {llm_config.provider}")
 
         # Check if API key is set
-        api_key = os.environ.get(provider_config["env_key"])
+        api_key = os.environ.get(provider_config.env_key)
         if not api_key:
-            print(f"{provider_config['env_key']} not set in env")
+            print(f"{provider_config.env_key} not set in env")
             sys.exit(1)
 
-        if llm_config.model in self._model_configs:
-            model_config = self._model_configs[llm_config.model]
-        else:
-            model_config = self._default_model_config
+        model_config = self._model_configs.get(
+            llm_config.model, self._default_model_config
+        )
 
         logger.debug(f"[{llm_config.provider}] model config: {model_config}")
 
@@ -84,21 +94,31 @@ class LLMProvider:
             f"using {llm_config.provider} provider with model={llm_config.model}"
         )
 
-        # Create kwargs for LLM initialization
-        kwargs = {
-            "temperature": llm_config.temperature,
-            "model_name": llm_config.model,
-            "api_key": api_key,
-        }
+        # Create kwargs based on provider type
+        if provider_config.model_class == ChatOpenAI:
+            kwargs: dict[str, Any] = {
+                "temperature": llm_config.temperature,
+                "model_name": llm_config.model,
+                "openai_api_key": api_key,
+            }
+            if provider_config.api_base:
+                kwargs["openai_api_base"] = provider_config.api_base
+        elif provider_config.model_class == ChatAnthropic:
+            kwargs = {
+                "temperature": llm_config.temperature,
+                "model": llm_config.model,
+                "anthropic_api_key": api_key,
+            }
+        else:
+            raise ValueError(f"Unsupported model class: {provider_config.model_class}")
 
-        # Add api_base for OpenRouter
-        if provider_config["api_base"]:
-            kwargs["openai_api_base"] = provider_config["api_base"]
+        # Create LLM instance
+        llm_instance = provider_config.model_class(**kwargs)
 
         return LLM(
-            llm=provider_config["class"](**kwargs),
-            use_system_message=model_config["use_system_message"],
-            max_number_of_tools=model_config["max_number_of_tools"],
+            llm=llm_instance,
+            use_system_message=model_config.use_system_message,
+            max_number_of_tools=model_config.max_number_of_tools,
         )
 
     def createAgentLLM(self) -> LLM:

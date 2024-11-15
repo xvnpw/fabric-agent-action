@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Callable
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -12,7 +13,7 @@ class FabricToolsFilter:
         self.included = self._split_string(included)
         self.excluded = self._split_string(excluded)
 
-    def _split_string(self, input_str: str) -> list:
+    def _split_string(self, input_str: str) -> list[str]:
         if input_str:
             try:
                 return [item.strip() for item in input_str.split(",")]
@@ -22,7 +23,9 @@ class FabricToolsFilter:
         else:
             return []
 
-    def get_fabric_tools_list(self, fabric_tools: list) -> list:
+    def get_fabric_tools_list(
+        self, fabric_tools: list[Callable[[str], str]]
+    ) -> list[Callable[[str], str]]:
         if self.included:
             included_tools = [
                 tool for tool in fabric_tools if tool.__name__ in self.included
@@ -44,9 +47,9 @@ class FabricTools:
         self,
         llm: BaseChatModel,
         use_system_message: bool = True,
-        max_number_of_tools: int = None,
-        included_tools: str = None,
-        excluded_tools: str = None,
+        max_number_of_tools: int = 1000,
+        included_tools: str = "",
+        excluded_tools: str = "",
     ):
         self.llm = llm
         self.use_system_message = use_system_message
@@ -95,6 +98,7 @@ class FabricTools:
             ]
 
             response = self.llm.invoke(messages)
+            assert isinstance(response.content, str)  # Ensure response is string type
 
             logger.debug(f"LLM response preview: {response.content[:50]}...")
             return response.content
@@ -1503,17 +1507,17 @@ class FabricTools:
         """
         return self.invoke_llm(input, "write_semgrep_rule")
 
-    def get_fabric_tools(self) -> list:
+    def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(
             self._get_fabric_tools()
         )
-        if self.max_number_of_tools and len(filtered_tools) > self.max_number_of_tools:
+        if len(filtered_tools) > self.max_number_of_tools:
             raise ValueError(
                 f"Model supporting only {self.max_number_of_tools} tools, but got {len(filtered_tools)}. Use --fabric-patterns-include/--fabric-patterns-exclude or different model."
             )
         return filtered_tools
 
-    def _get_fabric_tools(self) -> list:
+    def _get_fabric_tools(self) -> list[Callable[[str], str]]:
         return [
             self.agility_story,
             self.ai,
