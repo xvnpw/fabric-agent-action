@@ -172,7 +172,7 @@ quadrantChart
     title Agents: Autonomy vs. Reliability
     x-axis Low Autonomy --> High Autonomy
     y-axis Low Reliability --> High Reliability
-    Single Command Agent: [0.25, 0.75]
+    Router Agent: [0.25, 0.75]
     ReAct Agent: [0.6, 0.4]
 ```
 
