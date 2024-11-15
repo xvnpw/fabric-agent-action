@@ -61,7 +61,7 @@ class BaseGraphExecutor(ABC):
 
 
 class RouterGraphExecutor(BaseGraphExecutor):
-    """Executor for single command graphs."""
+    """Executor for router graphs."""
 
     def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
         self._execute(graph, input_str)
