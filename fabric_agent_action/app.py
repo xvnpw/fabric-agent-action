@@ -142,11 +142,13 @@ def parse_arguments() -> AppConfig:
     fabric_group.add_argument(
         "--fabric-patterns-included",
         type=str,
+        default="",
         help="Comma separated list of fabric patterns to include in agent",
     )
     fabric_group.add_argument(
         "--fabric-patterns-excluded",
         type=str,
+        default="",
         help="Comma separated list of fabric patterns to exclude in agent",
     )
     fabric_group.add_argument(

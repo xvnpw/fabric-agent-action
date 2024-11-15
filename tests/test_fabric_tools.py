@@ -226,7 +226,7 @@ def test_fabric_tools_filter(llm, included, excluded, tools_count):
 
 
 def test_fabric_tools_max_number_of_tools(llm):
-    fabric_tools = FabricTools(llm, max_number_of_tools=None)
+    fabric_tools = FabricTools(llm)
     tools = fabric_tools.get_fabric_tools()
     assert len(tools) == 175
 

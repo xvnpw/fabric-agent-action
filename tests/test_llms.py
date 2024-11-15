@@ -44,7 +44,7 @@ def test_get_llm_instance_openai(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatOpenAI)
     assert llm.use_system_message is True
-    assert llm.max_number_of_tools is None
+    assert llm.max_number_of_tools == 1000
 
 
 def test_get_llm_instance_anthropic(mock_env, llm_provider):
@@ -54,7 +54,7 @@ def test_get_llm_instance_anthropic(mock_env, llm_provider):
 
     assert isinstance(llm.llm, ChatAnthropic)
     assert llm.use_system_message is True
-    assert llm.max_number_of_tools is None
+    assert llm.max_number_of_tools == 1000
 
 
 def test_get_llm_instance_openrouter(mock_env, llm_provider):
@@ -115,7 +115,7 @@ def test_create_fabric_llm(mock_env, llm_provider):
     [
         ("openrouter", "gpt-4o", 128, True),
         ("openai", "openai/o1-preview", 256, False),
-        ("openai", "gpt-4", None, True),
+        ("openai", "gpt-4", 1000, True),
     ],
 )
 def test_model_configurations(

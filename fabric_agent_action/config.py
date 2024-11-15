@@ -1,5 +1,4 @@
 import io
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from typing_extensions import Literal
@@ -28,5 +27,5 @@ class AppConfig(BaseModel):
     fabric_temperature: float = Field(default=0, ge=0, le=1)
     agent_type: Literal["single_command", "react"] = Field(default="single_command")
     fabric_max_num_turns: int = Field(default=10, gt=0)
-    fabric_patterns_included: Optional[str] = None
-    fabric_patterns_excluded: Optional[str] = None
+    fabric_patterns_included: str
+    fabric_patterns_excluded: str

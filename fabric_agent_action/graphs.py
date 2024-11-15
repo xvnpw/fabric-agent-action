@@ -1,7 +1,9 @@
 import io
 import logging
+from typing import Any, Union
 
 from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.graph.state import CompiledStateGraph
 
 from fabric_agent_action.config import AppConfig
 
@@ -22,7 +24,7 @@ class GraphExecutor:
                     f"Could not set UTF-8 encoding: {e}. Falling back to system default."
                 )
 
-    def execute(self, graph, input_str: str) -> None:
+    def execute(self, graph: CompiledStateGraph, input_str: str) -> None:
         try:
             messages_state = self._invoke_graph(graph, input_str)
 
@@ -34,7 +36,9 @@ class GraphExecutor:
             logger.error(f"Graph execution failed: {str(e)}")
             raise
 
-    def _invoke_graph(self, graph, input_str: str) -> dict:
+    def _invoke_graph(
+        self, graph: CompiledStateGraph, input_str: str
+    ) -> Union[dict[str, Any], Any]:
         input_messages = [HumanMessage(content=input_str)]
         return graph.invoke(
             {
@@ -43,12 +47,16 @@ class GraphExecutor:
             }
         )
 
-    def _write_output(self, messages_state: dict) -> None:
+    def _write_output(self, messages_state: Any) -> None:
         last_message = messages_state["messages"][-1]
         if not isinstance(last_message, AIMessage) or not last_message.content:
             raise ValueError("Invalid or empty AI message")
 
-        content = self._format_output(last_message.content)
+        content = self._format_output(
+            last_message.content
+            if isinstance(last_message.content, str)
+            else str(last_message.content)
+        )
         self.config.output_file.write(content)
 
     def _format_output(self, content: str) -> str:
