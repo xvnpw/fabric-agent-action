@@ -39,6 +39,9 @@ jobs:
       - name: Run Ruff
         run: poetry run ruff check --output-format=github .
 
+      - name: Run MyPy
+        run: poetry run mypy fabric_agent_action
+
       - name: Dockerfile linter
         uses: hadolint/hadolint-action@v3.1.0
         with:
