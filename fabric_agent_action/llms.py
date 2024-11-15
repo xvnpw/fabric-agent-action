@@ -65,6 +65,7 @@ class LLMProvider:
         self._model_configs: dict[str, ModelConfig] = {
             "gpt-4o": ModelConfig(max_number_of_tools=128, use_system_message=True),
             "openai/o1-preview": ModelConfig(max_number_of_tools=256, use_system_message=False),
+            "o1-preview": ModelConfig(max_number_of_tools=256, use_system_message=False),
         }
         self._default_model_config = ModelConfig(max_number_of_tools=1000, use_system_message=True)
 
