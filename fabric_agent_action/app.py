@@ -102,7 +102,7 @@ def parse_arguments() -> AppConfig:
     agent_group.add_argument(
         "--agent-type",
         type=str,
-        choices=["router", "react"],
+        choices=["router", "react", "react_experimental_issue", "react_experimental_pr"],
         default="router",
         help="Type of agent (default: router)",
     )
