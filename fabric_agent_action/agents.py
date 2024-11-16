@@ -156,7 +156,7 @@ class ReActAgentExperimentalIssue(BaseReActAgent):
     """Experimental ReAct agent working on Github Issue content"""
 
     def _get_agent_prompt(self) -> str:
-        return """You are a Fabric Assistant specialized in analyzing and executing fabric-related tools. Your task is to process the following inputs and execute appropriate fabric tools:
+        return """You are a Fabric Assistant specialized in analyzing and executing fabric-related tools. Your task is to process inputs and execute fabric tools with exact output preservation.
 
 INPUT COMPONENTS:
 1. INSTRUCTION: Current action request
@@ -183,10 +183,15 @@ PROCESSING RULES:
 
 4. Failure Protocol:
    - If no suitable fabric pattern can be determined:
-     * Return "no fabric pattern for this request"
+     * Return exactly: "no fabric pattern for this request"
      * End processing
 
-EXPECTED OUTPUT:
-- Execute relevant fabric tools based on the analysis
-- Return the tool output in a structured format
+OUTPUT REQUIREMENTS:
+1. Return EXACT, UNMODIFIED tool output:
+   - Do not interpret or modify the tool results
+   - Do not add explanations or commentary
+   - Do not format or restructure the output
+   - Do not summarize or paraphrase
+   - Provide the complete tool output as-is
+
         """
