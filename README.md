@@ -17,7 +17,7 @@ Add the Fabric Agent Action to your workflow by referencing it in your `.yaml` f
 
 ```yaml
 - name: Execute Fabric Agent Action
-  uses: xvnpw/fabric-agent-action@v0.0.26
+  uses: xvnpw/fabric-agent-action@v0.0.28
   with:
     input_file: path/to/input.md
     output_file: path/to/output.md
@@ -127,7 +127,7 @@ jobs:
             return input;
 
       - name: Execute Fabric Patterns
-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.26
+        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.28
         with:
           input_file: fabric_input.md
           output_file: fabric_output.md
@@ -165,7 +165,7 @@ In this workflow:
 
 ## Agent Types
 
-Agents select appropriate Fabric patterns based on the input. If no matching patterns exist, they return "no fabric pattern for this request" and terminate.
+The action supports different types of agents that process fabric patterns. Each agent has specific capabilities and use cases.
 
 ```mermaid
 quadrantChart
@@ -174,95 +174,149 @@ quadrantChart
     y-axis Low Reliability --> High Reliability
     Router Agent: [0.25, 0.75]
     ReAct Agent: [0.6, 0.4]
+    ReAct Issue/PR Agent: [0.7, 0.3]
 ```
 
 In practice, there's often a trade-off between autonomy and reliability. Increasing LLM autonomy can sometimes reduce reliability due to factors like non-determinism or errors in tool selection.
 
-### `router` Agent
+### Router Agent (`router`)
 
-Executes a single pattern selection with direct output:
+The simplest agent that makes a single pattern selection and returns direct output. It follows a straightforward flow:
+1. Receives input
+2. Selects appropriate tool (pattern)
+3. Returns tool output
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
-        __start__([<p>__start__</p>]):::first
-        assistant(assistant)
-        tools(tools)
-        __end__([<p>__end__</p>]):::last
-        __start__ --> assistant;
-        tools --> __end__;
-        assistant -.-> tools;
-        assistant -.-> __end__;
-        classDef default fill:#f2f0ff,line-height:1.2
-        classDef first fill-opacity:0
-        classDef last fill:#bfb6fc
+    __start__([<p>__start__</p>]):::first
+    assistant(assistant)
+    tools(tools)
+    __end__([<p>__end__</p>]):::last
+    __start__ --> assistant;
+    tools --> __end__;
+    assistant -.-> tools;
+    assistant -.-> __end__;
+    classDef default fill:#f2f0ff,line-height:1.2
+    classDef first fill-opacity:0
+    classDef last fill:#bfb6fc
 ```
 
-**Example Input:**
+**Input Example:**
 
 ```markdown
 /fabric improve writing
 
-I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+I encountered a challenge in creating high-quality design documents [...]
 ```
 
-**Example Output:**
+### ReAct Agent (`react`)
 
-```markdown
-##### (🤖 AI Generated)
-
-I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results.
-```
-
-### `react` Agent
-
-The agent takes input from the user, decides on pattern selection, and reasons about the output from the pattern:
+A more sophisticated agent that implements the ReAct pattern (Reason-Act-Observe). Features:
+- Can make multiple tool calls in sequence
+- Reasons about tool outputs
+- Configurable maximum turns via `fabric_max_num_turns`
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
 graph TD;
-        __start__([<p>__start__</p>]):::first
-        assistant(assistant)
-        tools(tools)
-        __end__([<p>__end__</p>]):::last
-        __start__ --> assistant;
-        tools --> assistant;
-        assistant -.-> tools;
-        assistant -.-> __end__;
-        classDef default fill:#f2f0ff,line-height:1.2
-        classDef first fill-opacity:0
-        classDef last fill:#bfb6fc
+    __start__([<p>__start__</p>]):::first
+    assistant(assistant)
+    tools(tools)
+    __end__([<p>__end__</p>]):::last
+    __start__ --> assistant;
+    tools --> assistant;
+    assistant -.-> tools;
+    assistant -.-> __end__;
+    classDef default fill:#f2f0ff,line-height:1.2
+    classDef first fill-opacity:0
+    classDef last fill:#bfb6fc
 ```
 
-Use `fabric_max_num_turns` to limit number of turns to LLM for pattern processing (=tools node).
-
-This approach follows the intuition behind [ReAct](https://react-lm.github.io/):
-
-- **Act:** Let the model call specific tools (patterns).
-- **Observe:** Pass the tool output back to the model.
-- **Reason:** Let the model reason about the tool output to decide the next action.
-
-**Example Input:**
+**Input Example:**
 
 ```markdown
 /fabric clean text and improve writing
 
-I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+I encountered a challenge in creating high-quality design documents [...]
 ```
 
-**Example Output:**
+### Specialized GitHub Agents
+
+Two variants of ReAct agent optimized for GitHub interactions:
+
+1. ReAct Issue Agent: Processes GitHub Issues
+   - Handles structured input with INSTRUCTION, ISSUE, and COMMENTS
+   - Maintains context from previous interactions
+   - Preserves exact tool outputs
+
+2. ReAct Pull Request Agent: Processes Pull Requests
+   - Similar to Issue agent but includes GIT DIFF analysis
+   - Processes INSTRUCTION, PR description, and comments
+   - Can analyze code changes through diff
+
+#### ReAct Issue Agent `react_issue`
+
+**Example Input:**
 
 ```markdown
-##### (🤖 AI Generated)
+INSTRUCTION:
+/fabric improve writing of cleaned text
 
-Here is the cleaned and improved version of your text:
+GITHUB ISSUE, NR: 1233, AUTHOR: xvnpw, TITLE: Text improvements
+I encountered a challenge in     creating high-quality design documents for my threat modeling research..... About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
 
-Cleaned Text:
-"I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results."
+ISSUE COMMENT, ID: 12321434, AUTHOR: xvnpw
+/fabric clean text
 
-Improved Writing:
-"I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I developed the AI Nutrition-Pro architecture and have been using it since then. What if it's already included in the training data of LLMs? Testing threat modeling capabilities could yield false results."
+ISSUE COMMENT, ID: 12313245, AUTHOR: github-action[bot]
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+
+ISSUE COMMENT, ID: 32425444, AUTHOR: pedro
+I think writing about training data is inrelevent. We don't really know what is in those data.
 ```
+
+#### ReAct Pull Request Agent `react_pr`
+
+**Example Input:**
+
+```markdown
+INSTRUCTION:
+/fabric improve writing of cleaned text
+
+GITHUB PULL REQUEST, NR: 1233, AUTHOR: xvnpw, TITLE: Text improvements
+I encountered a challenge in     creating high-quality design documents for my threat modeling research..... About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+
+GIT DIFF:
+diff --git a/.github/workflows/fabric-docs-pr.yml b/.github/workflows/fabric-docs-pr.yml
+index 996a93a..ba7d121 100644
+--- a/.github/workflows/fabric-docs-pr.yml
++++ b/.github/workflows/fabric-docs-pr.yml
+@@ -58,7 +58,7 @@ jobs:
+           CHANGED_FILES: ${{ steps.changed_files.outputs.changed_files }}
+
+       - name: Execute Fabric patterns
+-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.26
++        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.27^M
+         with:
+           input_file: "fabric_input.md"
+           output_file: "fabric_output.md"
+diff --git a/.github/workflows/fabric-issue-agent-react-experimental-issue.yml b/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
+index 3850a70..8b8321b 100644
+--- a/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
++++ b/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
+
+PULL REQUEST COMMENT, ID: 12321434, AUTHOR: xvnpw
+/fabric clean text
+
+PULL REQUEST COMMENT, ID: 12313245, AUYTHOR: github-action[bot]
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
+
+PULL REQUEST COMMENT, ID: 32425444, AUTHOR: pedro
+I think writing about training data is inrelevent. We don't really know what is in those data.
+```
+
+All agents will return "no fabric pattern for this request" if they cannot match the input to an appropriate pattern.
 
 ## Debugging
 
