@@ -109,6 +109,7 @@ class GraphExecutorFactory:
     _EXECUTOR_MAP: Final[dict[str, Type[BaseGraphExecutor]]] = {
         "router": RouterGraphExecutor,
         "react": ReActGraphExecutor,
+        "react_experimental_issue": ReActGraphExecutor,
     }
 
     @classmethod
