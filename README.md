@@ -8,7 +8,7 @@
 
 - **Seamless Integration:** Easily incorporate the action into your existing workflows without additional setup.
 - **Multi-Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference and availability.
-- **Configurable Agent Behavior:** Select agent types (`router` or `react`) and customize their behavior to suit your workflow needs.
+- **Configurable Agent Behavior:** Select agent types (`router`, `react`, `react_issue` or `react_pr`) and customize their behavior to suit your workflow needs.
 - **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and comply with model limitations.
 
 ## Setup
@@ -49,7 +49,7 @@ Use workflow conditions to limit who can run this action:
 | `output_file` | **Required** Destination file for pattern results | |
 | `verbose` | Enable INFO level logging | `false` |
 | `debug` | Enable DEBUG level logging | `false` |
-| `agent_type` | Agent behavior model (`router`/`react`) | `router` |
+| `agent_type` | Agent behavior model (`router`/`react`/`react_issue`/`react_pr`) | `router` |
 | `agent_provider` | LLM provider for agent (`openai`/`openrouter`/`anthropic`) | `openai` |
 | `agent_model` | Model name for agent | `gpt-4o` |
 | `agent_temperature` | Model creativity (0-1) for agent | `0` |
