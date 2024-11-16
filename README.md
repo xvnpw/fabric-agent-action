@@ -36,6 +36,7 @@ Use workflow conditions to limit who can run this action:
 | Type | Abuse Description | Example Protecting Condition |
 | --- | --- | --- |
 | Pull request  | Pull requests can originate from forks | `if: github.event.pull_request.head.repo.full_name == github.repository` |
+| Pull request comment | Pull requests can originate from forks. It's not possible to check it in the same way as pull request, because event type is different. | `github.event.comment.user.login == github.event.repository.owner.login` and `if (pr.data.head.repo.owner.login !== context.repo.owner)` |
 | Issue comment | Anyone can create issues and add comments on public repositories | `github.event.comment.user.login == github.event.repository.owner.login` |
 
 ## Configuration
