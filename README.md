@@ -83,14 +83,13 @@ This action is flexible in workflow integration and can be used on issues, pushe
 Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
 
 ```yaml
-name: Fabric Pattern Processing
+name: Fabric Pattern Processing using ReAct Issue Agent
 on:
   issue_comment:
     types: [created, edited]
 
 jobs:
   process_fabric:
-    # Only trigger when comments start with '/fabric' from the repository owner
     if: >
       github.event.comment.user.login == github.event.repository.owner.login &&
       startsWith(github.event.comment.body, '/fabric') &&
@@ -104,7 +103,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Use github-script to fetch issue and comment details and prepare input
       - name: Prepare Input
         uses: actions/github-script@v7
         id: prepare-input
@@ -122,23 +120,48 @@ jobs:
               repo: context.repo.repo
             });
 
-            const input = `${comment.data.body}\n\n${issue.data.body}`;
-            require('fs').writeFileSync('fabric_input.md', input);
+            // Get all comments for this issue to include in the output
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
 
-            return input;
+            // Extract command from the triggering comment
+            const command = comment.data.body;
+
+            let output = `INSTRUCTION:\n${command}\n\n`;
+
+            // Add issue information
+            output += `GITHUB ISSUE, NR: ${issue.data.number}, AUTHOR: ${issue.data.user.login}, TITLE: ${issue.data.title}\n`;
+            output += `${issue.data.body}\n\n`;
+
+            // Add all comments
+            for (const c of comments.data) {
+              if (c.id === comment.data.id) {
+                break;
+              }
+              output += `ISSUE COMMENT, ID: ${c.id}, AUTHOR: ${c.user.login}\n`;
+              output += `${c.body}\n\n`;
+            }
+
+            require('fs').writeFileSync('fabric_input.md', output);
+
+            return output;
 
       - name: Execute Fabric Patterns
         uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.28
         with:
-          input_file: fabric_input.md
-          output_file: fabric_output.md
-          agent_preamble_enabled: true
-          agent_model: gpt-4o  # IMPORTANT: gpt-4o supports only 128 patterns; use fabric_patterns_included/fabric_patterns_excluded
-          fabric_patterns_included: clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing
+          input_file: "fabric_input.md"
+          output_file: "fabric_output.md"
+          agent_type: "react_issue"
+          fabric_temperature: 0.2
+          fabric_patterns_included: "clean_text,create_stride_threat_model,create_design_document,review_design,refine_design_document,create_threat_scenarios,improve_writing,create_quiz,create_summary"
+          debug: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
-      # Post the results back to the original issue
       - name: Post Results
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -175,7 +198,7 @@ quadrantChart
     y-axis Low Reliability --> High Reliability
     Router Agent: [0.25, 0.75]
     ReAct Agent: [0.6, 0.4]
-    ReAct Issue/PR Agent: [0.7, 0.3]
+    ReAct Issue/PR Agents: [0.7, 0.3]
 ```
 
 In practice, there's often a trade-off between autonomy and reliability. Increasing LLM autonomy can sometimes reduce reliability due to factors like non-determinism or errors in tool selection.
