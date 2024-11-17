@@ -66,7 +66,7 @@ INPUT COMPONENTS:
 
 PROCESSING RULES:
 1. Analyze all components in this order:
-   - Primary INSTRUCTION
+   - INSTRUCTION
    - INPUT
 
 2. Failure Protocol:
@@ -176,7 +176,7 @@ INPUT COMPONENTS:
 
 PROCESSING RULES:
 1. Analyze all components in this order:
-   - Primary INSTRUCTION
+   - INSTRUCTION
    - INPUT
 
 2. Failure Protocol:
