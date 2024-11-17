@@ -57,14 +57,18 @@ jobs:
         run: |
           export CHANGED_FILES="${{ steps.changed_files.outputs.changed_files }}"
           poetry run python scripts/generate_fabric_tools.py
-
-          if [ -f "fabric_tools.txt" ]; then
-            echo "python_code<<EOF" >> $GITHUB_OUTPUT
-            cat fabric_tools.txt >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Prepare input
+        id: prepare_input
+        run: |
+          printf "Modified files:\n" > pr.md
+          printf "\n```\n${{ steps.changed_files.outputs.changed_files_raw }}\n```\n" >> pr.md
+          printf "Python code to add:\n" >> pr.md
+          printf "\n```" >> pr.md
+          cat fabric_tools.txt >> pr.md
+          printf "\n```\n" >> pr.md
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
@@ -73,18 +77,7 @@ jobs:
           branch: patterns/cron-update
           delete-branch: true
           title: "Update fabric patterns"
-          body: |
-            Modified files:
-            ```
-            ${{ steps.changed_files.outputs.changed_files_raw }}
-            ```
-
-            Python code to add:
-            ```
-            ${{ steps.python_code.outputs.python_code }}
-            ```
-
-            Please review the changes carefully before merging.
+          body-path: pr.md
           add-paths: |
             prompts/fabric_patterns/**
           labels: |
