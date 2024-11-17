@@ -52,7 +52,7 @@ def scan_folders(root_path: str | Path, process_all: bool = False) -> List[Tuple
         return patterns
 
     # Iterate through all subdirectories
-    for folder in islice(root.iterdir(), 3):
+    for folder in root.iterdir():
         if not folder.is_dir():
             continue
 
