@@ -48,7 +48,7 @@ jobs:
           dockerfile: Dockerfile
 
       - name: Test with pytest
-        run: poetry run pytest
+        run: poetry run pytest -m "not integration"
 
       - name: Test docker
         run: |

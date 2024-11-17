@@ -172,23 +172,7 @@ def main() -> None:
 
         logger.info("Starting Fabric Agent Action")
 
-        input_str = read_input(config.input_file)
-
-        llm_provider = LLMProvider(config)
-        fabric_llm = llm_provider.createFabricLLM()
-        fabric_tools = FabricTools(
-            fabric_llm.llm,
-            fabric_llm.use_system_message,
-            fabric_llm.max_number_of_tools,
-            config.fabric_patterns_included,
-            config.fabric_patterns_excluded,
-        )
-
-        agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
-        graph = agent_builder.build()
-
-        executor = GraphExecutorFactory.create(config)
-        executor.execute(graph, input_str)
+        app(config)
 
         logger.info("Fabric Agent Action completed successfully")
 
@@ -202,6 +186,26 @@ def main() -> None:
                 config.input_file.close()
             if config.output_file and config.output_file is not sys.stdout:
                 config.output_file.close()
+
+
+def app(config: AppConfig) -> None:
+    input_str = read_input(config.input_file)
+
+    llm_provider = LLMProvider(config)
+    fabric_llm = llm_provider.createFabricLLM()
+    fabric_tools = FabricTools(
+        fabric_llm.llm,
+        fabric_llm.use_system_message,
+        fabric_llm.max_number_of_tools,
+        config.fabric_patterns_included,
+        config.fabric_patterns_excluded,
+    )
+
+    agent_builder = AgentBuilder(config.agent_type, llm_provider, fabric_tools)
+    graph = agent_builder.build()
+
+    executor = GraphExecutorFactory.create(config)
+    executor.execute(graph, input_str)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,5 @@
+INSTRUCTION:
+/fabric clean text and improve writing:
+
+INPUT:
+I encountered a  the  challenge in creating very high-quality design documents for my threat modeling research. About a year and a half ago, I created AI Nutrition-Pro architecture and have been using it since then, What if its the already in LLMs' training data???? Testing threat modelling features could give me wrong results.
