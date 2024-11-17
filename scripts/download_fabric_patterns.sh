@@ -1,5 +1,3 @@
-#!/bin/bash
-
 GIT_FABRIC_DIR=temp_fabric
 
 git clone https://github.com/danielmiessler/fabric $GIT_FABRIC_DIR
