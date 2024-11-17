@@ -1,8 +1,7 @@
 import argparse
-from itertools import islice
 import os
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -52,7 +51,7 @@ def scan_folders(root_path: str | Path, process_all: bool = False) -> List[Tuple
         return patterns
 
     # Iterate through all subdirectories
-    for folder in root.iterdir():
+    for folder in root.iterdir():  # for debug islice
         if not folder.is_dir():
             continue
 
