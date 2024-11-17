@@ -66,7 +66,7 @@ jobs:
           printf "Modified files:\n" > pr.md
           printf '\n```\n${{ steps.changed_files.outputs.changed_files_raw }}\n```\n' >> pr.md
           printf "Python code to add:\n" >> pr.md
-          printf '\n```'' >> pr.md
+          printf '\n```' >> pr.md
           cat fabric_tools.txt >> pr.md
           printf '\n```\n' >> pr.md
 
