@@ -23,7 +23,8 @@ jobs:
         run: |
           bash scripts/download_fabric_patterns.sh
 
-          CHANGED_FILES=$(git diff --name-only HEAD -- prompts/fabric_patterns/)
+          git add prompts/fabric_patterns/
+          CHANGED_FILES=$(git status --porcelain prompts/fabric_patterns/ | awk '{print $2}')
           echo "$CHANGED_FILES"
           if [ -z "$CHANGED_FILES" ]; then
             echo "No fabric patterns changes"
