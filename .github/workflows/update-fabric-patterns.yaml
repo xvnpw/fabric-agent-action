@@ -39,8 +39,8 @@ jobs:
           git add prompts/fabric_patterns/
           CHANGED_FILES_RAW=$(git status --porcelain prompts/fabric_patterns/)
           CHANGED_FILES=$(git status --porcelain prompts/fabric_patterns/ | grep "^[AM]" | awk '{print $2}')
-          echo "$CHANGED_FILES"
-          if [ -z "$CHANGED_FILES" ]; then
+          echo "$CHANGED_FILES_RAW"
+          if [ -z "$CHANGED_FILES_RAW" ]; then
             echo "No fabric patterns changes"
             exit 0
           fi
