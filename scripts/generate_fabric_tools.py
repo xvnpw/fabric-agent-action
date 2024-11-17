@@ -16,7 +16,7 @@ def scan_folders(root_path):
 
     # Iterate through all subdirectories
     for folder in root.iterdir():
-        if folder.name in ["find_logical_fallacies"]:  # skipping
+        if not folder.name in ["find_logical_fallacies"]:  # filtering
             continue
         if folder.is_dir():
             system_file = folder / "system.md"
@@ -106,9 +106,7 @@ def convert_to_method(patterns: list) -> str:
     result += "    return [\n"
 
     # Convert each pattern to self.pattern format
-    formatted_items = [
-        f"        self.{pattern_name}" for pattern_name, pattern_content in patterns
-    ]
+    formatted_items = [f"        self.{pattern_name}" for pattern_name, pattern_content in patterns]
 
     # Join items with commas and new lines
     result += ",\n".join(formatted_items)
@@ -126,9 +124,7 @@ def convert_to_test(patterns: list) -> str:
     result += "    [\n"
 
     # Convert each pattern to self.pattern format
-    formatted_items = [
-        f'        "{pattern_name}"' for pattern_name, pattern_content in patterns
-    ]
+    formatted_items = [f'        "{pattern_name}"' for pattern_name, pattern_content in patterns]
 
     # Join items with commas and new lines
     result += ",\n".join(formatted_items)
