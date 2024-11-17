@@ -1501,6 +1501,14 @@ class FabricTools:
         """
         return self.invoke_llm(input, "write_semgrep_rule")
 
+    def find_logical_fallacies(self, input: str) -> str:
+        """Tool to identify logical fallacies in text using fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "find_logical_fallacies")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1686,4 +1694,5 @@ class FabricTools:
             self.write_nuclei_template_rule,
             self.write_pull_request,
             self.write_semgrep_rule,
+            self.find_logical_fallacies,
         ]
