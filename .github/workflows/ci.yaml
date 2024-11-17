@@ -24,6 +24,7 @@ jobs:
         run: |
           poetry config virtualenvs.create false
           poetry install --no-root
+          poetry install
 
       - name: Run Ruff
         run: poetry run ruff check --output-format=github .
