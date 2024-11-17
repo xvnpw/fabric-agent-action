@@ -1,9 +1,37 @@
+import argparse
+import os
 from pathlib import Path
-from langchain_openai import ChatOpenAI
+
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 
-def scan_folders(root_path):
+def get_changed_folders():
+    """Get list of changed folders from GITHUB_OUTPUT environment variable"""
+    changed_files = os.getenv("CHANGED_FILES", "")
+    if not changed_files:
+        return []
+
+    # Convert file paths to folder names
+    changed_folders = set()
+    for file_path in changed_files.splitlines():
+        # Extract the folder name from the path
+        # Example: prompts/fabric_patterns/find_logical_fallacies/system.md -> find_logical_fallacies
+        parts = Path(file_path).parts
+        if len(parts) >= 3:  # Make sure we have enough parts in the path
+            changed_folders.add(parts[2])  # parts[2] is the folder name after fabric_patterns
+
+    return list(changed_folders)
+
+
+def scan_folders(root_path, process_all=False):
+    """
+    Scan folders for patterns.
+
+    Args:
+        root_path: Path to the root directory
+        process_all: If True, process all folders regardless of CHANGED_FILES
+    """
     # Convert string path to Path object if needed
     root = Path(root_path)
 
@@ -13,11 +41,19 @@ def scan_folders(root_path):
         return
 
     patterns = []
+    changed_folders = get_changed_folders() if not process_all else None
+
+    # If no changed folders and not processing all, exit early
+    if changed_folders is not None and not changed_folders:
+        print("No changed folders found")
+        return patterns
 
     # Iterate through all subdirectories
     for folder in root.iterdir():
-        if not folder.name in ["find_logical_fallacies"]:  # filtering
+        # Skip if not in changed folders (unless processing all)
+        if changed_folders is not None and folder.name not in changed_folders:
             continue
+
         if folder.is_dir():
             system_file = folder / "system.md"
 
@@ -137,15 +173,21 @@ def convert_to_test(patterns: list) -> str:
 
 
 if __name__ == "__main__":
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Process fabric patterns.")
+    parser.add_argument("--process-all", action="store_true", help="Process all patterns regardless of CHANGED_FILES")
+    args = parser.parse_args()
+
     folder_path = "prompts/fabric_patterns"
-    patterns = scan_folders(folder_path)
+    patterns = scan_folders(folder_path, process_all=args.process_all)
 
     if not patterns:
-        print("No patterns found or error occurred while scanning folders.")
-        exit(1)
+        print("No patterns found or no changes detected.")
+        exit(0)  # Changed to exit 0 as no changes is not an error
 
     with open("fabric_tools.txt", "w", encoding="utf-8") as f:
-        print(f"\nFound {len(patterns)} patterns:")
+        pattern_type = "all" if args.process_all else "changed"
+        print(f"\nProcessing {len(patterns)} {pattern_type} patterns:")
         for p, c in patterns:
             print(f"- {p}")
             create_tool_code(p, c, f)
