@@ -37,7 +37,8 @@ jobs:
           bash scripts/download_fabric_patterns.sh
 
           git add prompts/fabric_patterns/
-          CHANGED_FILES=$(git status --porcelain prompts/fabric_patterns/)
+          CHANGED_FILES_RAW=$(git status --porcelain prompts/fabric_patterns/)
+          CHANGED_FILES=$(git status --porcelain prompts/fabric_patterns/ | grep "^[AM]" | awk '{print $2}')
           echo "$CHANGED_FILES"
           if [ -z "$CHANGED_FILES" ]; then
             echo "No fabric patterns changes"
@@ -45,6 +46,10 @@ jobs:
           fi
           echo "changed_files<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "changed_files_raw<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES_RAW" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Process changed patterns
@@ -69,7 +74,7 @@ jobs:
           body: |
             Modified files:
             ```
-            ${{ steps.changed_files.outputs.changed_files }}
+            ${{ steps.changed_files.outputs.changed_files_raw }}
             ```
 
             Python code to add:
