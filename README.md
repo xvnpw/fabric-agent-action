@@ -232,8 +232,10 @@ graph TD;
 **Input Example:**
 
 ```markdown
+INSTRUCTION:
 /fabric improve writing
 
+INPUT:
 I encountered a challenge in creating high-quality design documents [...]
 ```
 
@@ -263,8 +265,10 @@ graph TD;
 **Input Example:**
 
 ```markdown
+INSTRUCTION:
 /fabric clean text and improve writing
 
+INPUT:
 I encountered a challenge in creating high-quality design documents [...]
 ```
 
