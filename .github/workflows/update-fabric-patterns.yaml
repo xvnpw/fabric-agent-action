@@ -18,6 +18,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.create false
+          poetry install --no-root
+
       - name: Get changed files
         id: changed_files
         run: |
@@ -34,6 +47,18 @@ jobs:
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Process changed patterns
+        id: python_code
+        run: |
+          export CHANGED_FILES="${{ steps.changed_files.outputs.changed_files }}"
+          poetry run python scripts/generate_fabric_tools.py
+
+          if [ -f "fabric_tools.txt" ]; then
+            echo "python_code<<EOF" >> $GITHUB_OUTPUT
+            cat fabric_tools.txt >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -45,6 +70,11 @@ jobs:
             Modified files:
             ```
             ${{ steps.changed_files.outputs.changed_files }}
+            ```
+
+            Python code to add:
+            ```
+            ${{ steps.python_code.outputs.python_code }}
             ```
 
             Please review the changes carefully before merging.

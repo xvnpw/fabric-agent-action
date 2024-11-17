@@ -1,199 +1,193 @@
 import argparse
+from itertools import islice
 import os
 from pathlib import Path
+from typing import List, Tuple, Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 
-def get_changed_folders():
-    """Get list of changed folders from GITHUB_OUTPUT environment variable"""
+def get_changed_folders() -> List[str]:
+    """Get list of changed folders from GITHUB_OUTPUT environment variable.
+
+    Returns:
+        List[str]: List of folder names that were changed
+    """
     changed_files = os.getenv("CHANGED_FILES", "")
     if not changed_files:
         return []
 
     # Convert file paths to folder names
-    changed_folders = set()
-    for file_path in changed_files.splitlines():
-        # Extract the folder name from the path
-        # Example: prompts/fabric_patterns/find_logical_fallacies/system.md -> find_logical_fallacies
-        parts = Path(file_path).parts
-        if len(parts) >= 3:  # Make sure we have enough parts in the path
-            changed_folders.add(parts[2])  # parts[2] is the folder name after fabric_patterns
+    changed_folders = {
+        Path(file_path).parts[2]  # parts[2] is the folder name after fabric_patterns
+        for file_path in changed_files.splitlines()
+        if len(Path(file_path).parts) >= 3
+    }
 
     return list(changed_folders)
 
 
-def scan_folders(root_path, process_all=False):
+def scan_folders(root_path: str | Path, process_all: bool = False) -> List[Tuple[str, str]]:
     """
     Scan folders for patterns.
 
     Args:
         root_path: Path to the root directory
         process_all: If True, process all folders regardless of CHANGED_FILES
-    """
-    # Convert string path to Path object if needed
-    root = Path(root_path)
 
-    # Check if the root path exists
+    Returns:
+        List[Tuple[str, str]]: List of tuples containing (pattern_name, pattern_content)
+    """
+    root = Path(root_path)
     if not root.exists():
-        print(f"Error: Path {root_path} does not exist")
-        return
+        raise FileNotFoundError(f"Path {root_path} does not exist")
 
     patterns = []
-    changed_folders = get_changed_folders() if not process_all else None
+    changed_folders = None if process_all else get_changed_folders()
 
-    # If no changed folders and not processing all, exit early
+    # Early return if no changes detected and not processing all
     if changed_folders is not None and not changed_folders:
         print("No changed folders found")
         return patterns
 
     # Iterate through all subdirectories
-    for folder in root.iterdir():
+    for folder in islice(root.iterdir(), 3):
+        if not folder.is_dir():
+            continue
+
         # Skip if not in changed folders (unless processing all)
         if changed_folders is not None and folder.name not in changed_folders:
             continue
 
-        if folder.is_dir():
-            system_file = folder / "system.md"
+        system_file = folder / "system.md"
+        if not system_file.exists():
+            print(f"\nWarning: No system.md file found in folder: {folder.name}")
+            continue
 
-            # Check if system.md exists in the subfolder
-            if system_file.exists():
-                try:
-                    # Read the first 50 characters from the file
-                    with open(system_file, "r", encoding="utf-8") as f:
-                        content = f.read()
-
-                    patterns.append((folder.name, content))
-                except Exception as e:
-                    print(f"\nFolder: {folder.name}")
-                    print(f"Error reading file: {str(e)}")
-            else:
-                print(f"\nFolder: {folder.name}")
-                print("No system.md file found")
+        try:
+            content = system_file.read_text(encoding="utf-8")
+            patterns.append((folder.name, content))
+        except Exception as e:
+            print(f"\nError reading file in folder {folder.name}: {str(e)}")
 
     return patterns
 
 
-def create_tool_code(pattern_name, pattern_content, output_file):
+def create_tool_code(pattern_name: str, pattern_content: str, output_file) -> None:
+    """
+    Create tool code using LLM and write to output file.
+
+    Args:
+        pattern_name: Name of the pattern
+        pattern_content: Content of the pattern
+        output_file: File object to write the output to
+    """
+    SYSTEM_PROMPT = """You are a helpful assistant tasked with creating python functions that will be used as fabric tools for LLM. I will give you PROMPT NAME and PROMPT CONTENT. You will create me well formatted python function.
+
+    FORMATTING
+
+    def function_name(self, input: str) -> str:
+        \"""Tool description
+
+        Args:
+            input: input text
+        \"""
+    return self.invoke_llm(input, "prompt_name")
+
+    - replace function_name with value of PROMPT_NAME
+    - prompt_name replace with value of PROMPT_NAME
+    - description of tool must contains information that tool is "fabric pattern"
+    """
+
     llm = ChatOpenAI(model="gpt-4o")
+    messages = [
+        SystemMessage(content=SYSTEM_PROMPT),
+        HumanMessage(
+            content=f"PROMPT NAME: {pattern_name}\n\nPROMPT CONTENT: {pattern_content}\n\nTOOL DESCRIPTION:\n"
+        ),
+    ]
 
-    sys_msg = SystemMessage(
-        content="""You are a helpful assistant tasked with creating python functions that will be used as fabric tools for LLM. I will give you PROMPT NAME and PROMPT CONTENT. You will create me well formatted python function.
-
-        FORMATTING
-
-        def function_name(self, input: str) -> str:
-            \"""Tool description
-
-            Args:
-                input: input text
-            \"""
-        return self.invoke_llm(input, "prompt_name")
-
-        - replace function_name with value of PROMPT_NAME
-        - prompt_name replace with value of PROMPT_NAME
-        - description of tool must contains information that tool is "fabric pattern"
-
-        EXAMPLE
-
-        - PROMPT NAME: clean_text
-        - PROMPT CONTENT: # IDENTITY and PURPOSE
-
-You are an expert at cleaning up broken and, malformatted, text, for example: line breaks in weird places, etc.
-
-# Steps
-
-- Read the entire document and fully understand it.
-- Remove any strange line breaks that disrupt formatting.
-- Add capitalization, punctuation, line breaks, paragraphs and other formatting where necessary.
-- Do NOT change any content or spelling whatsoever.
-
-# OUTPUT INSTRUCTIONS
-
-- Output the full, properly-formatted text.
-- Do not output warnings or notes—just the requested sections.
-
-# INPUT:
-
-INPUT:
-
-        - TOOL DESCRIPTION: Clean input text from broken and, malformatted text using fabric pattern
-        """
-    )
-
-    human_msg = HumanMessage(
-        content=f"PROMPT NAME: {pattern_name}\n\nPROMPT CONTENT: {pattern_content}\n\nTOOL DESCRIPTION:\n"
-    )
-
-    response = llm.invoke([sys_msg, human_msg])
-
-    content = response.content
-    if content:
-        content = content.replace("```python", "")
-        content = content.replace("```", "")
-
-    output_file.write(content + "\n")
+    response = llm.invoke(messages)
+    if response.content:
+        # Remove code block markers if present
+        content = response.content.replace("```python", "").replace("```", "")
+        output_file.write(f"{content}\n")
 
 
-def convert_to_method(patterns: list) -> str:
-    # Create the method signature
-    result = "def get_fabric_tools(self) -> list:\n"
-    result += "    return [\n"
+def convert_to_method(patterns: List[Tuple[str, str]]) -> str:
+    """
+    Convert patterns to a method definition.
 
-    # Convert each pattern to self.pattern format
-    formatted_items = [f"        self.{pattern_name}" for pattern_name, pattern_content in patterns]
+    Args:
+        patterns: List of (pattern_name, pattern_content) tuples
 
-    # Join items with commas and new lines
-    result += ",\n".join(formatted_items)
-
-    # Close the list and function
-    result += "\n    ]"
-
-    return result
-
-
-def convert_to_test(patterns: list) -> str:
-    # Create the method signature
-    result = "@pytest.mark.parametrize(\n"
-    result += '    "pattern_name",\n'
-    result += "    [\n"
-
-    # Convert each pattern to self.pattern format
-    formatted_items = [f'        "{pattern_name}"' for pattern_name, pattern_content in patterns]
-
-    # Join items with commas and new lines
-    result += ",\n".join(formatted_items)
-
-    # Close the list and function
-    result += "\n    ],"
-    result += "\n)"
-
-    return result
+    Returns:
+        str: Method definition as string
+    """
+    method_lines = [
+        "def get_fabric_tools(self) -> list:",
+        "    return [",
+        *[f"        self.{pattern_name}" for pattern_name, _ in patterns],
+        "    ]",
+    ]
+    return "\n".join(method_lines)
 
 
-if __name__ == "__main__":
-    # Set up argument parser
+def convert_to_test(patterns: List[Tuple[str, str]]) -> str:
+    """
+    Convert patterns to a test definition.
+
+    Args:
+        patterns: List of (pattern_name, pattern_content) tuples
+
+    Returns:
+        str: Test definition as string
+    """
+    test_lines = [
+        "@pytest.mark.parametrize(",
+        '    "pattern_name",',
+        "    [",
+        *[f'        "{pattern_name}"' for pattern_name, _ in patterns],
+        "    ],",
+        ")",
+    ]
+    return "\n".join(test_lines)
+
+
+def main():
     parser = argparse.ArgumentParser(description="Process fabric patterns.")
-    parser.add_argument("--process-all", action="store_true", help="Process all patterns regardless of CHANGED_FILES")
+    parser.add_argument(
+        "--process-all",
+        action="store_true",
+        help="Process all patterns regardless of CHANGED_FILES",
+    )
     args = parser.parse_args()
 
     folder_path = "prompts/fabric_patterns"
-    patterns = scan_folders(folder_path, process_all=args.process_all)
+    try:
+        patterns = scan_folders(folder_path, process_all=args.process_all)
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return 1
 
     if not patterns:
         print("No patterns found or no changes detected.")
-        exit(0)  # Changed to exit 0 as no changes is not an error
+        return 0
+
+    pattern_type = "all" if args.process_all else "changed"
+    print(f"\nProcessing {len(patterns)} {pattern_type} patterns:")
 
     with open("fabric_tools.txt", "w", encoding="utf-8") as f:
-        pattern_type = "all" if args.process_all else "changed"
-        print(f"\nProcessing {len(patterns)} {pattern_type} patterns:")
-        for p, c in patterns:
-            print(f"- {p}")
-            create_tool_code(p, c, f)
+        for pattern_name, pattern_content in patterns:
+            print(f"- {pattern_name}...")
+            create_tool_code(pattern_name, pattern_content, f)
 
-        get_fabric_tools_str = convert_to_method(patterns)
-        f.write(get_fabric_tools_str)
+        f.write(convert_to_method(patterns) + "\n")
+        f.write(convert_to_test(patterns))
 
-        p_test = convert_to_test(patterns)
-        f.write(p_test)
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())
