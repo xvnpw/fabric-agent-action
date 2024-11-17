@@ -63,6 +63,8 @@ jobs:
             cat fabric_tools.txt >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v7
