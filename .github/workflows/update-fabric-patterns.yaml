@@ -1,0 +1,54 @@
+name: Update Fabric Patterns
+
+on:
+  workflow_dispatch: {}
+  # Schedule the CI job (this method uses cron syntax):
+  schedule:
+    - cron: '20 17 * * *' # Sets run every day at 17:20 UTC.
+
+jobs:
+  update_fabric_patterns:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed_files
+        run: |
+          bash scripts/download_fabric_patterns.sh
+
+          CHANGED_FILES=$(git diff --name-only HEAD -- prompts/fabric_patterns/)
+          echo "$CHANGED_FILES"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No fabric patterns changes"
+            exit 0
+          fi
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: fabric patterns"
+          branch: patterns/cron-update
+          delete-branch: true
+          title: "Update fabric patterns"
+          body: |
+            Modified files:
+            ```
+            ${{ steps.changed_files.outputs.changed_files }}
+            ```
+
+            Please review the changes carefully before merging.
+          add-paths: |
+            prompts/fabric_patterns/**
+          labels: |
+            fabric
+            patterns
