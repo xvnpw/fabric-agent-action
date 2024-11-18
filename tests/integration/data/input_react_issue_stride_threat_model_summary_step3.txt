@@ -1,0 +1,200 @@
+INSTRUCTION:
+/fabric take the architecture from issue body and create threat scenarios
+
+GITHUB ISSUE, NR: 11, AUTHOR: xvnpw, TITLE: Threat modeling of AI Nutrition-Pro
+# Architecture
+
+This document outlines the architecture of the AI Nutrition-Pro application, including system context, containers, and deployment views. The architecture is depicted using C4 diagrams for enhanced clarity..
+
+## System Context diagram
+
+```mermaid
+C4Context
+  title System Context diagram for AI Nutrition-Pro
+  Enterprise_Boundary(b0, "AI Nutrition-Pro boundary") {
+    System(anps1, "AI Nutrition-Pro API Service")
+  }
+  Enterprise_Boundary(b1, "OpenAI") {
+    System_Ext(ChatGPT, "ChatGPT", "LLM")
+  }
+  Enterprise_Boundary(b2, "Meal Planner A") {
+    Person_Ext(n1, "Dietitian A")
+    System_Ext(apa, "Meal Planner A System")
+  }
+  Rel(anps1, ChatGPT, "Uses for LLM featured content creation", "REST")
+  Rel(n1, apa, "Uses for diet creation")
+  Rel(apa, anps1, "Uses for AI content generation", "REST")
+```
+
+- AI Nutrition-Pro is API backend application that uses OpenAI ChatGPT as LLM solution. It connects to OpenAI server using REST.
+- Meal Planner A is one of many Meal Planner applications that can be integrated with AI Nutrition-Pro. It connects to AI Nutrition-Pro using REST.
+- Dietitian A uses Meal Planner A for making diets. For example, dietitian can generate new diet introductions based on existing ones. LLMs can create this content following personal style of dietitian.
+
+## Containers Context diagram
+
+```mermaid
+C4Container
+    title Container diagram for AI Nutrition-Pro
+
+    Container_Boundary(c0, "AI Nutrition-Pro") {
+        Container(api_gateway, "API Gateway", "Kong", "Authentication of clients, filtering of input, rate limiting")
+        Container(app_control_plane, "Web Control Plane", "Golang, AWS Elastic Container Service", "Provides control plane to onboard and manage clients, configuration and check billing data")
+        ContainerDb(control_plan_db, "Control Plane Database", "Amazon RDS", "Stores all data related to control plan, tenants, billing")
+        Container(backend_api, "API Application", "Golang, AWS Elastic Container Service", "Provides AI Nutrition-Pro functionality via API")
+        ContainerDb(api_db, "API database", "Amazon RDS", "Stores dietitian' content samples, request and responses to LLM.")
+        Person(admin, "Administrator", "Administrator of AI Nutrition-Pro application")
+        Person(onboard_manager, "App Onboarding Manager", "Employee that is onboarding new Meal Planner applications to AI Nutrition-Pro application")
+    }
+
+    Person(ce1, "Meal Planner application manager", "Meal Planner employee designated to manage AI Nutrition-Pro integration")
+
+    System_Ext(mealApp, "Meal Planner", "Application to create diets by dietitians")
+    Person_Ext(n1, "Dietitian")
+
+    System_Ext(chatgpt, "ChatGPT-3.5", "LLM")
+
+    Rel(n1, mealApp, "Uses for diet creation")
+    Rel(mealApp, api_gateway, "Uses for AI content generation", "HTTPS/REST")
+    Rel(api_gateway, backend_api, "Uses for AI content generation", "HTTPS/REST")
+    Rel(ce1, app_control_plane, "Manage billings, onboard new dietitians")
+    Rel(admin, app_control_plane, "Configure system properties")
+    Rel(onboard_manager, app_control_plane, "Creates new tenant. Onboarding new meal planner applications")
+    Rel(backend_api, chatgpt, "Utilizes ChatGPT for LLM-featured content creation", "HTTPS/REST")
+
+    Rel(app_control_plane, control_plan_db, "read/write data", "TLS")
+    Rel(backend_api, api_db, "read/write data", "TLS")
+```
+
+### External systems and persons
+
+| Name | Type | Description | Responsibilities |
+| --- | --- | --- | --- |
+| Meal Planner application | External system, web application | One of many Meal Planner applications that can be integrated with AI Nutrition-Pro. It connects to AI Nutrition-Pro using REST and HTTPS. | - uploads samples of dietitians' content to AI Nutrition-Pro <br/> - fetches AI generated results, e.g. diet introduction, from AI Nutrition-Pro |
+| Dietitian | External person | It's a customer of Meal Planner application. It's using Meal Planner to create diets for patients. It will see AI generated content directly in Meal Planner. | - creates diets <br> - consents to AI processing of data |
+|  ChatGPT-3.5 | External system, API | It's OpenAI product, an LLM solution | It will be used to generate content based on provided samples. |
+
+### AI Nutrition-Pro container context systems and persons
+
+| Name | Type | Description | Responsibilities |
+| --- | --- | --- | --- |
+| Web Control Plane | Internal system, Web application | It's written using Golang and deployed as Docker container into AWS Elastic Container Service. It uses Control Plane Database to store data. It's used in 3 roles: Administrator, App Onboarding Manager, and Meal Planner application manager. | Provide control plane to onboard and manage clients, configuration and check billing data |
+| Control Plane Database | Internal database, Amazon RDS instance | Database | storing data for Web Control Plane |
+| API Gateway | Internal system, API Gateway | Kong API Gateway | - authentication <br> - rate limiting <br> - filtering of input |
+| API Application | Internal system, API application | It's written using Golang and deployed as Docker container into AWS Elastic Container Service | Provides AI Nutrition-Pro functionality via API. |
+| API database | Internal database, Amazon RDS instance | Stored data: samples of dietitians' content, requests, and responses to LLM. | Storing data for API Application |
+| Administrator | Internal Person | Administrator of AI Nutrition-Pro application. | - manage server configuration <br> - resolve problems <br> |
+| App Onboarding Manager | Internal Person | Employee that is onboarding new Meal Planner applications to AI Nutrition-Pro application. | - manage configuration of integrated Meal Planner application |
+| Meal Planner application manager | Internal Person | Employee of Meal Planner | Manages AI Nutrition-Pro integration, e.g. configuration, api keys, billings. |
+
+## Deployment diagram
+
+For deployment, we will use Amazon AWS Cloud.
+
+```mermaid
+C4Deployment
+  title AI Nutrition-Pro deployment to AWS Cloud diagram
+  Deployment_Node(aws, "AWS account") {
+    Deployment_Node(vpc, "VPC", "App VPC") {
+      Deployment_Node(ecs, "AWS ECS", "App ECS") {
+        Container(api_gateway, "API Gateway", "Kong")
+        Container(api_app, "API Application", "Golang")
+        Container(web_control_plane, "Web Control Plane", "Golang")
+      }
+    }
+    ContainerDb(api_db, "API Database", "AWS RDS")
+    ContainerDb(control_plane_db, "Control Plane Database", "AWS RDS")
+  }
+
+  Rel(api_gateway, api_app, "REST/HTTPS")
+  Rel(api_app, api_db, "Native/TLS")
+  Rel(web_control_plane, control_plane_db, "Native/TLS")
+```
+
+- API Gateway - deployed into AWS ECS service and into App VPC. It's Kong. Accessing API Application using REST/HTTPS protocol.
+- API Application - deployed as Docker container into AWS ECS service and into App VPC. It's application created in Golang. Accessing API Database using Native/TLS protocol.
+- Web Control Plane - deployed as Docker container into AWS ECS service and into App VPC. It's application created in Golang. Accessing Control Plane Database using Native/TLS protocol.
+- API Database - instance of AWS RDS.
+- Control Plane Database - instance of AWS RDS.
+
+ISSUE COMMENT, ID: 2480527344, AUTHOR: xvnpw
+/fabric create stride threat model:
+
+ISSUE COMMENT, ID: 2480547637, AUTHOR: github-actions[bot]
+## ASSETS
+
+1. **AI Nutrition-Pro API Service**: Provides AI-driven content generation.
+2. **Control Plane Database**: Stores control plane data, tenant information, and billing data.
+3. **API Database**: Stores dietitian content samples, requests, and responses to the LLM.
+4. **API Gateway**: Manages authentication, rate limiting, and input filtering.
+5. **Web Control Plane**: Manages client onboarding, configuration, and billing data.
+6. **ChatGPT-3.5**: External LLM used for content generation.
+7. **Meal Planner A System**: External system for diet creation.
+8. **Dietitian A**: External person using Meal Planner A for diet creation.
+
+## TRUST BOUNDARIES
+
+1. **External Systems Boundary**: Between AI Nutrition-Pro and external systems like ChatGPT and Meal Planner A.
+2. **Internal Systems Boundary**: Between components within AI Nutrition-Pro (e.g., API Gateway, Web Control Plane, databases).
+3. **User Interaction Boundary**: Between external users (e.g., Dietitian A) and the Meal Planner A System.
+
+## DATA FLOWS
+
+1. **AI Nutrition-Pro API Service to ChatGPT**: Uses REST for LLM content creation.
+2. **Meal Planner A to AI Nutrition-Pro API Service**: Uses REST for AI content generation.
+3. **Web Control Plane to Control Plane Database**: Uses TLS for data read/write.
+4. **API Application to API Database**: Uses TLS for data read/write.
+5. **API Gateway to Backend API**: Uses HTTPS/REST for AI content generation.
+
+## THREAT MODEL
+
+| THREAT ID | COMPONENT NAME | THREAT NAME | STRIDE CATEGORY | WHY APPLICABLE | HOW MITIGATED | MITIGATION | LIKELIHOOD EXPLANATION | IMPACT EXPLANATION | RISK SEVERITY |
+|-----------|----------------|-------------|-----------------|----------------|---------------|------------|------------------------|--------------------|---------------|
+| 0001 | API Gateway | Unauthorized Access | Spoofing | API Gateway authenticates clients; unauthorized access could lead to data breaches. | Authentication is managed by Kong API Gateway. | Implement multi-factor authentication for sensitive operations. | Medium likelihood due to reliance on Kong's authentication. | High impact as unauthorized access could expose sensitive data. | High |
+| 0002 | API Application | Data Tampering | Tampering | API Application processes dietitian content; tampering could alter data integrity. | Data is transmitted over HTTPS. | Implement data integrity checks and logging. | Low likelihood due to HTTPS, but potential for insider threats. | Medium impact as tampered data could affect AI outputs. | Medium |
+| 0003 | Control Plane Database | Data Breach | Information Disclosure | Stores sensitive billing and tenant data. | Data is encrypted at rest and in transit. | Regular audits and access controls. | Low likelihood due to encryption and access controls. | High impact due to sensitive nature of data. | Medium |
+| 0004 | API Database | Data Exfiltration | Information Disclosure | Stores dietitian content samples and LLM interactions. | Data is encrypted at rest and in transit. | Implement anomaly detection for unusual access patterns. | Medium likelihood due to potential misconfigurations. | High impact as it involves sensitive content. | High |
+| 0005 | Web Control Plane | Unauthorized Configuration Changes | Elevation of Privilege | Manages client onboarding and configuration. | Access is restricted to authorized personnel. | Implement role-based access control (RBAC). | Medium likelihood if access controls are bypassed. | High impact as it could disrupt service operations. | High |
+| 0006 | ChatGPT-3.5 | API Misuse | Denial of Service | External API could be misused, affecting service availability. | Rate limiting is implemented. | Monitor API usage and implement stricter rate limits. | Medium likelihood due to potential for abuse. | Medium impact as it could degrade service performance. | Medium |
+
+## QUESTIONS & ASSUMPTIONS
+
+1. **Questions**:
+   - What specific authentication mechanisms are in place for the API Gateway?
+   - Are there any existing monitoring solutions for detecting unusual data access patterns?
+   - How often are security audits conducted for the databases?
+
+2. **Assumptions**:
+   - All data is encrypted both at rest and in transit.
+   - Kong API Gateway is configured with up-to-date security practices.
+   - Regular security training is provided to personnel with access to sensitive systems.
+
+This threat model highlights realistic threats based on the architecture and provides a basis for prioritizing security efforts.
+
+ISSUE COMMENT, ID: 2480547839, AUTHOR: xvnpw
+/fabric create summary of stride threat model
+
+ISSUE COMMENT, ID: 2480548041, AUTHOR: github-actions[bot]
+## ONE SENTENCE SUMMARY:
+
+The threat model identifies potential security risks in AI Nutrition-Pro's architecture, emphasizing authentication, data integrity, and access control measures.
+
+## MAIN POINTS:
+
+1. AI Nutrition-Pro uses external systems like ChatGPT and Meal Planner A for content generation.
+2. Internal systems include API Gateway, Web Control Plane, and databases for data management.
+3. Trust boundaries separate external systems, internal components, and user interactions.
+4. Data flows involve REST and TLS protocols for secure communication between components.
+5. Unauthorized access to the API Gateway poses a high-risk threat due to potential data breaches.
+6. Data tampering in the API Application could affect AI outputs, mitigated by HTTPS and logging.
+7. Control Plane Database faces medium risk of data breach, mitigated by encryption and audits.
+8. API Database is at high risk of data exfiltration, requiring anomaly detection for mitigation.
+9. Web Control Plane's unauthorized configuration changes could disrupt services, mitigated by RBAC.
+10. ChatGPT-3.5 API misuse could lead to denial of service, mitigated by rate limiting and monitoring.
+
+## TAKEAWAYS:
+
+1. Implement multi-factor authentication for sensitive operations to enhance security.
+2. Regular audits and access controls are crucial for protecting sensitive data.
+3. Anomaly detection systems can help identify unusual access patterns in databases.
+4. Role-based access control (RBAC) is essential for managing configuration changes.
+5. Monitoring API usage and stricter rate limits can prevent service degradation.

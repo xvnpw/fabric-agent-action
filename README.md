@@ -1,23 +1,38 @@
 # Fabric Agent Action
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 🤖 **Fabric Agent Action** is a GitHub Action that leverages [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows using an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it intelligently selects and executes patterns using Large Language Models (LLMs).
 
+## Table of Contents
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Security](#security)
+- [Configuration](#configuration)
+- [Usage Examples](#usage-examples)
+- [Agent Types](#agent-types)
+- [Debugging](#debugging)
+- [Running Anywhere](#running-anywhere)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Features
+
+✨ **Key Capabilities:**
 
 - **Seamless Integration:** Easily incorporate the action into your existing workflows without additional setup.
 - **Multi-Provider Support:** Choose between OpenAI, OpenRouter, or Anthropic based on your preference and availability.
-- **Configurable Agent Behavior:** Select agent types (`router`, `react`, `react_issue` or `react_pr`) and customize their behavior to suit your workflow needs.
+- **Configurable Agent Behavior:** Select agent types (`router`, `react`, `react_issue`, or `react_pr`) and customize their behavior to suit your workflow needs.
 - **Flexible Pattern Management:** Include or exclude specific Fabric Patterns to optimize performance and comply with model limitations.
 
-## Setup
+## Quick Start
 
-Add the Fabric Agent Action to your workflow by referencing it in your `.yaml` file:
+To add the Fabric Agent Action to your workflow, reference it in your workflow `.yaml` file:
 
 ```yaml
 - name: Execute Fabric Agent Action
-  uses: xvnpw/fabric-agent-action@v0.0.30
+  uses: xvnpw/fabric-agent-action@v0.0.30  # or docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.30 to avoid action rebuild on each run
   with:
     input_file: path/to/input.md
     output_file: path/to/output.md
@@ -25,20 +40,22 @@ Add the Fabric Agent Action to your workflow by referencing it in your `.yaml` f
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Set Environment Variables: Ensure you set the required API keys in your repository's secrets.
+**Set Environment Variables:** Ensure you set the required API keys in your repository's secrets.
 
 ## Security
 
-**⚠️ Important:** Before using this action, implement protections against unauthorized use, especially in public repositories. Unauthorized usage can lead to excessive API consumption and incur costs.
+⚠️ **Important:** Implement proper security controls to prevent unauthorized usage and protect your API costs.
 
-Use workflow conditions to limit who can run this action:
+### Access Control Patterns
 
-| Type | Abuse Description | Example Protecting Condition |
+Use these workflow conditions to protect your action:
+
+| Context | Risk | Protection |
 | --- | --- | --- |
-| Pull request  | Pull requests can originate from forks | `if: github.event.pull_request.head.repo.full_name == github.repository` |
-| Pull request comment | Pull requests can originate from forks. It's not possible to check it in the same way as pull request, because event type is different. | `if: github.event.comment.user.login == github.event.repository.owner.login` and `if (pr.data.head.repo.owner.login !== context.repo.owner)` |
-| Issue comment | Anyone can create issues and add comments on public repositories | `if: github.event.comment.user.login == github.event.repository.owner.login` |
-| All events | | `if: github.actor == 'authorized-username'` |
+| Pull Requests | Fork-based PRs can run workflows | `if: github.event.pull_request.head.repo.full_name == github.repository` |
+| PR Comments | Public repositories allow anyone to comment | `if: github.event.comment.user.login == github.event.repository.owner.login` and `if (pr.data.head.repo.owner.login !== context.repo.owner)` |
+| Issue Comments | Public repositories allow anyone to comment | `if: github.event.comment.user.login == github.event.repository.owner.login` |
+| All Events | General access control | `if: github.actor == 'authorized-username'` |
 
 ## Configuration
 
@@ -75,9 +92,9 @@ Set one of the following API keys:
 - `OPENROUTER_API_KEY`
 - `ANTHROPIC_API_KEY`
 
-## Usage Example
+## Usage Examples
 
-This action is flexible in workflow integration and can be used on issues, pushes, etc.
+This action is flexible in workflow integration and can be used on issues, pushes, pull requests, etc.
 
 ### Issue Comments - Created or Edited
 
@@ -98,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -192,7 +209,7 @@ In this workflow:
 
 ## Agent Types
 
-The action supports different types of agents that process fabric patterns. Each agent has specific capabilities and use cases.
+The action supports different types of agents that process Fabric patterns. Each agent has specific capabilities and use cases.
 
 ```mermaid
 quadrantChart
@@ -209,9 +226,10 @@ In practice, there's often a trade-off between autonomy and reliability. Increas
 ### Router Agent (`router`)
 
 The simplest agent that makes a single pattern selection and returns direct output. It follows a straightforward flow:
-1. Receives input
-2. Selects appropriate tool (pattern)
-3. Returns tool output
+
+1. Receives input.
+2. Selects appropriate tool (pattern).
+3. Returns tool output.
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
@@ -242,9 +260,10 @@ I encountered a challenge in creating high-quality design documents [...]
 ### ReAct Agent (`react`)
 
 A more sophisticated agent that implements the ReAct pattern (Reason-Act-Observe). Features:
-- Can make multiple tool calls in sequence
-- Reasons about tool outputs
-- Configurable maximum turns via `fabric_max_num_turns`
+
+- Can make multiple tool calls in sequence.
+- Reasons about tool outputs.
+- Configurable maximum turns via `fabric_max_num_turns`.
 
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
@@ -276,17 +295,17 @@ I encountered a challenge in creating high-quality design documents [...]
 
 Two variants of ReAct agent optimized for GitHub interactions:
 
-1. ReAct Issue Agent: Processes GitHub Issues
-   - Handles structured input with INSTRUCTION, ISSUE, and COMMENTS
-   - Maintains context from previous interactions
-   - Preserves exact tool outputs
+1. **ReAct Issue Agent**: Processes GitHub Issues.
+   - Handles structured input with `INSTRUCTION`, `GITHUB ISSUE`, and `ISSUE COMMENTS`.
+   - Maintains context from previous interactions.
+   - Preserves exact tool outputs.
 
-2. ReAct Pull Request Agent: Processes Pull Requests
-   - Similar to Issue agent but includes GIT DIFF analysis
-   - Processes INSTRUCTION, PR description, and comments
-   - Can analyze code changes through diff
+2. **ReAct Pull Request Agent**: Processes Pull Requests.
+   - Similar to Issue agent but includes `GIT DIFF` analysis.
+   - Processes `INSTRUCTION`, PR description, and comments.
+   - Can analyze code changes through diff.
 
-#### ReAct Issue Agent `react_issue`
+#### ReAct Issue Agent (`react_issue`)
 
 **Example Input:**
 
@@ -307,7 +326,7 @@ ISSUE COMMENT, ID: 32425444, AUTHOR: pedro
 I think writing about training data is inrelevent. We don't really know what is in those data.
 ```
 
-#### ReAct Pull Request Agent `react_pr`
+#### ReAct Pull Request Agent (`react_pr`)
 
 **Example Input:**
 
@@ -332,10 +351,6 @@ index 996a93a..ba7d121 100644
          with:
            input_file: "fabric_input.md"
            output_file: "fabric_output.md"
-diff --git a/.github/workflows/fabric-issue-agent-react-experimental-issue.yml b/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
-index 3850a70..8b8321b 100644
---- a/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
-+++ b/.github/workflows/fabric-issue-agent-react-experimental-issue.yml
 
 PULL REQUEST COMMENT, ID: 12321434, AUTHOR: xvnpw
 /fabric clean text
@@ -366,11 +381,31 @@ To use LangSmith, set the following environment variables:
 - `LANGCHAIN_API_KEY`: `${{ secrets.LANGCHAIN_API_KEY }}`
 - `LANGCHAIN_TRACING_V2`: `true`
 
+## Running Anywhere
+
+The application can be run anywhere from source or using Docker.
+
+**Using Docker:**
+
+```bash
+docker run --rm -it -v $(pwd):/data -e INPUT_INPUT_FILE=/data/fabric_input.md -e INPUT_OUTPUT_FILE=/data/fabric_output.md ghcr.io/xvnpw/fabric-agent-action:v0.0.30
+```
+
+**From Source:**
+
+```bash
+# Ensure you have poetry installed
+git clone git@github.com:xvnpw/fabric-agent-action.git
+cd fabric-agent-action/
+poetry install
+poetry run python fabric_agent_action/app.py --input-file fabric_input.md --output-file fabric_output.md
+```
+
 ## Supported LLM Providers
 
-- [OpenAI](https://platform.openai.com/) - Industry standard
-- [OpenRouter](https://openrouter.ai/) - Multi-model gateway
-- [Anthropic](https://www.anthropic.com/) - Claude models
+- [OpenAI](https://platform.openai.com/) - Industry standard.
+- [OpenRouter](https://openrouter.ai/) - Multi-model gateway.
+- [Anthropic](https://www.anthropic.com/) - Claude models.
 
 ## Contributing
 

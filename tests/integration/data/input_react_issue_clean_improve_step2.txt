@@ -1,0 +1,19 @@
+INSTRUCTION:
+/fabric improve writing of cleaned text
+
+GITHUB ISSUE, NR: 10, AUTHOR: xvnpw, TITLE: Text improvements
+Gives LLM bigger chunk of text as input and requesting the some sort of ''thinking'' leads to the hallucinations. On current state of models we cannot get rid of it Maybe in the future those will be gone.
+
+Does it mean that LLMs are useless.. Certainly Not. We can replace a job function with my prompts? No for sure. We  can   replace the task of creating a design document? Also a not. So what Can we do? We can automate some sub  tasks. And that is perfect application for LLM. We dont need to suffer the rigor of a blank page - we can get a draft with some sections needing rewrite and some being oki...
+
+ISSUE COMMENT, ID: 2480523498, AUTHOR: xvnpw
+/fabric clean text:
+
+ISSUE COMMENT, ID: 2480523946, AUTHOR: github-actions[bot]
+##### (🤖 AI Generated)
+
+The text has been cleaned and improved for clarity:
+
+Gives LLM a bigger chunk of text as input and requesting some sort of "thinking" leads to hallucinations. In the current state of models, we cannot get rid of it. Maybe in the future, those will be gone.
+
+Does it mean that LLMs are useless? Certainly not. Can we replace a job function with my prompts? No, for sure. Can we replace the task of creating a design document? Also, a no. So what can we do? We can automate some subtasks, and that is a perfect application for LLM. We don't need to suffer the rigor of a blank page—we can get a draft with some sections needing a rewrite and some being okay.

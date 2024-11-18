@@ -1,0 +1,236 @@
+INSTRUCTION:
+/fabric create summary for pull request description
+
+GITHUB PULL REQUEST, NR: 8, AUTHOR: github-actions[bot], TITLE: 📝 [AI] Improve documentation writing style
+This PR contains AI-generated improvements to the documentation files.
+
+Modified files:
+```
+docs/001-user-stories.md
+docs/PROJECT.md
+```
+
+Please review the changes carefully before merging.
+
+GIT DIFF:
+diff --git a/docs/001-user-stories.md b/docs/001-user-stories.md
+index b0005eb..148ffd7 100644
+--- a/docs/001-user-stories.md
++++ b/docs/001-user-stories.md
+@@ -1,52 +1,51 @@
+-# User stories
++# User Stories
+
+-## User can run `fabric` withing Github issues
++## User can run `fabric` within GitHub issues
+
+ As a GitHub user, I want to be able to use a GitHub action to leverage a large language model (LLM) from the [fabric](https://github.com/danielmiessler/fabric) app to perform various actions on GitHub issues, so that I can automate and streamline my workflow.
+
+ **Acceptance Criteria**
+
+-
+-
+-1. The GitHub action should be able to detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric".
+-2. The action should be able to parse the rest of the comment to determine the specific action the user wants to perform, such as "create stride threat model????
+-3. The action should then pass the relevant information from the issue (e.g., the issue body in Markdown format) to the `fabric`, which will process the request and generate the appropriate output...
+-4. The action should then post the output as a new comment on the original GitHub issue.
++1. The GitHub action should detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric."
++2. The action should parse the rest of the comment to determine the specific action the user wants to perform, such as "create stride threat model."
++3. The action should then pass the relevant information from the issue (e.g., the issue body in Markdown format) to `fabric`, which will process the request and generate the appropriate output.
++4. The action should post the output as a new comment on the original GitHub issue.
+ 5. The action should handle any errors or failures gracefully, providing the user with a clear indication of what went wrong.
+
+-## User can run fabric` with references to additional files in repository
++## User can run `fabric` with references to additional files in the repository
+
+-As a GitHub user, I want the GitHub action to be able to fetch additional files from the repository, along with the issue information, so that I can provide the fabric with a more comprehensive set of data to process my requests.
++As a GitHub user, I want the GitHub action to be able to fetch additional files from the repository, along with the issue information, so that I can provide `fabric` with a more comprehensive set of data to process my requests.
+
+ **Acceptance Criteria:**
+
+-1. The GitHub action should be able to detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a request to fetch additional files.
+-2. The action should be able to parse the comment to determine the specific files the user wants to fetch, in addition to the action they want to perform (e.g., "fabric, create stride threat model from this issue and the threat_model.md file").
+-3. The action should then use the GitHub API to fetch the specified files from the repository.
+-4. The action should combine the issue information (e.g., the issue body in Markdown format) and the fetched files, and pass this data to the fabric for processing.
+-5. The action should then post the output from the fabric as a new comment on the original GitHub issue.
++1. The GitHub action should detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a request to fetch additional files.
++2. The action should parse the comment to determine the specific files the user wants to fetch, in addition to the action they want to perform (e.g., "fabric, create stride threat model from this issue and the threat_model.md file").
++3. The action should use the GitHub API to fetch the specified files from the repository.
++4. The action should combine the issue information (e.g., the issue body in Markdown format) and the fetched files, and pass this data to `fabric` for processing.
++5. The action should post the output from `fabric` as a new comment on the original GitHub issue.
+ 6. The action should handle any errors or failures gracefully, providing the user with a clear indication of what went wrong (e.g., if a requested file does not exist).
+
+ ## User can edit issue and re-run `fabric`
+
+-As a GitHub user, I want to be able to edit the content of a GitHub issue after the initial fabric processing has been performed, and then ask the GitHub action to re-run the fabric processing on the updated issue, so that I can refine my request and get updated results.
++As a GitHub user, I want to be able to edit the content of a GitHub issue after the initial `fabric` processing has been performed, and then ask the GitHub action to re-run the `fabric` processing on the updated issue, so that I can refine my request and get updated results.
+
+ **Acceptance Criteria:**
+
+-1. The GitHub action should be able to detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a request to re-run the fabric processing (e.g., "fabric, re-process this issue").
+-2. The action should be able to identify the previous fabric processing that was performed on the issue, and use the original issue content and any fetched files to re-send the request to the fabric.
+-3. If the user has edited the issue content since the last fabric processing, the action should use the updated issue content and any previously fetched files for the re-processing.
+-4. The action should post the new output from the fabric as a new comment on the original GitHub issue.
+-5. The action should handle any errors or failures gracefully, providing the user with a clear indication of what went wrong (e.g., if the fabric returns an error).
++1. The GitHub action should detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a request to re-run the `fabric` processing (e.g., "fabric, re-process this issue").
++2. The action should identify the previous `fabric` processing that was performed on the issue and use the original issue content and any fetched files to re-send the request to `fabric`.
++3. If the user has edited the issue content since the last `fabric` processing, the action should use the updated issue content and any previously fetched files for the re-processing.
++4. The action should post the new output from `fabric` as a new comment on the original GitHub issue.
++5. The action should handle any errors or failures gracefully, providing the user with a clear indication of what went wrong (e.g., if `fabric` returns an error).
+
+ ## User can run chained `fabric` calls
+
+-As a GitHub user, I want to be able to submit a series of fabric requests that can be executed in sequence, so that I can perform more complex workflows or multi-step processes on the GitHub issue content.
++As a GitHub user, I want to be able to submit a series of `fabric` requests that can be executed in sequence, so that I can perform more complex workflows or multi-step processes on the GitHub issue content.
+
+ **Acceptance Criteria:**
+
+-1. The GitHub action should be able to detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a sequence of requests (e.g., "fabric, create stride threat model, then summarize the threat model").
+-2. The action should be able to parse the sequence of requests and execute them one after the other, passing the output of the previous request as input to the next request.
++1. The GitHub action should detect when a user adds a comment to a GitHub issue that starts with the keyword "fabric" and includes a sequence of requests (e.g., "fabric, create stride threat model, then summarize the threat model").
++2. The action should parse the sequence of requests and execute them one after the other, passing the output of the previous request as input to the next request.
+ 3. If the user includes a request to fetch additional files, the action should fetch those files and include them in the input data for the subsequent requests.
+-4. The action should post the final output from the sequence of fabric requests as a new comment on the original GitHub issue.
++4. The action should post the final output from the sequence of `fabric` requests as a new comment on the original GitHub issue.
+ 5. The action should handle any errors or failures gracefully, providing the user with a clear indication of what went wrong (e.g., if one of the requests in the sequence fails).
++
+diff --git a/docs/PROJECT.md b/docs/PROJECT.md
+index df74d1f..994a6ff 100644
+--- a/docs/PROJECT.md
++++ b/docs/PROJECT.md
+@@ -1,39 +1,37 @@
+-# AI Nutrition-Pro
+-
+-## Business background
+-
+-Dietitians use online applications to create meals, diets and calculate calories called meal planners. Different professionals have different ways of creating diets, which gives a personal style to it. LLMs can reproduce this personal style of writing based on samples of already created content. Meal planners can use LLMs to speed up diet creation for dietitians.
+-
+-## Project Overview
+-
+-AI Nutrition-Pro will be backend API application that will have the possibility to integrate with any meal planner application for dietitians. It will reproduce the personal style of a nutrition specialist based on samples.
+-
+-
+-
+-Dietitians will not use the application directly but from their meal planner applications. There will be no user interface exposed to Dietitians. Integration will be using meal plan applications backend.
+-
+-Direct clients of AI Nutrition-Pro will be applications like DietMaster Pro, Nutritionist Pro, or others. Those clients will send to AI Nutrition-Pro samples of content and AI Nutrition-Pro will generate requested type of content based on that. AI Nutrition-Pro will use LLM to generate requested content.
+-
+-## Core Features
+-
+-- multi  tenant API application - where tenant is client application like DietMaster Pro, Nutritionist Pro, or others.
+-- each tenant can contain many dietitians.
+-- each dietitian can have multiple customers...
+-- the application will be deployed into AWS cloud and use cloud-based services to store and process data.
+-- the application will store and process PII information that might contain personal health data of customers.
+-- ChatGPT 35 will be used as LLM...
+-
+-## High level connection view
+-
+-```mermaid
+-flowchart TB
+-    DietMaster-Pro --> AI-Nutrition-Pro
+-    Nutritionist-Pro --> AI-Nutrition-Pro
+-    subgraph AWS
+-    AI-Nutrition-Pro
+-    end
+-    subgraph OpenAI
+-    ChatGPT-3.5
+-    end
+-    AI-Nutrition-Pro --> ChatGPT-3.5
++# AI Nutrition-Pro
++
++## Business Background
++
++Dietitians use online applications to create meals, design diets, and calculate calories, known as meal planners. Different professionals have unique methods of creating diets, which adds a personal touch to their work. Large Language Models (LLMs) can replicate this personal style of writing based on samples of existing content. Meal planners can utilize LLMs to expedite diet creation for dietitians.
++
++## Project Overview
++
++AI Nutrition-Pro will be a backend API application capable of integrating with any meal planner application for dietitians. It will replicate the personal style of a nutrition specialist based on provided samples.
++
++Dietitians will not interact with the application directly; instead, they will access it through their meal planner applications. There will be no user interface exposed to dietitians. Integration will occur via the backend of meal plan applications.
++
++The direct clients of AI Nutrition-Pro will be applications like DietMaster Pro, Nutritionist Pro, and others. These clients will send samples of content to AI Nutrition-Pro, which will generate the requested type of content based on those samples. AI Nutrition-Pro will use LLM to generate the requested content.
++
++## Core Features
++
++- Multi-tenant API application, where each tenant is a client application like DietMaster Pro, Nutritionist Pro, or others.
++- Each tenant can include multiple dietitians.
++- Each dietitian can have multiple customers.
++- The application will be deployed in the AWS cloud and will utilize cloud-based services to store and process data.
++- The application will store and process Personally Identifiable Information (PII) that may include personal health data of customers.
++- ChatGPT 3.5 will be used as the LLM.
++
++## High-Level Connection View
++
++```mermaid
++flowchart TB
++    DietMaster-Pro --> AI-Nutrition-Pro
++    Nutritionist-Pro --> AI-Nutrition-Pro
++    subgraph AWS
++    AI-Nutrition-Pro
++    end
++    subgraph OpenAI
++    ChatGPT-3.5
++    end
++    AI-Nutrition-Pro --> ChatGPT-3.5
+ ```
+\ No newline at end of file
+
+
+PULL REQUEST COMMENT, ID: 2480737406, AUTHOR: xvnpw
+changes looks good to me! 😃
+
+PULL REQUEST COMMENT, ID: 2480737583, AUTHOR: xvnpw
+/fabric create pull request
+
+PULL REQUEST COMMENT, ID: 2480737952, AUTHOR: github-actions[bot]
+# Pull Request Description
+
+## Summary
+
+This pull request includes updates to the documentation files `001-user-stories.md` and `PROJECT.md`. The changes primarily involve formatting improvements, grammatical corrections, and clarifications to enhance readability and consistency.
+
+## Files Changed
+
+1. **`docs/001-user-stories.md`**:
+   - Adjusted the title capitalization for consistency.
+   - Improved the clarity and grammatical accuracy of user stories and acceptance criteria.
+   - Ensured consistent formatting of the `fabric` keyword and other technical terms.
+
+2. **`docs/PROJECT.md`**:
+   - Enhanced the readability and clarity of the business background and project overview sections.
+   - Improved the formatting of the core features list for better comprehension.
+   - Made grammatical corrections and ensured consistent use of technical terms.
+   - Updated the high-level connection view diagram for better presentation.
+
+## Code Changes
+
+### `docs/001-user-stories.md`
+
+- Changed the title from `# User stories` to `# User Stories`.
+- Corrected grammatical errors and improved sentence structure in user stories and acceptance criteria.
+- Ensured consistent use of backticks for the `fabric` keyword.
+
+### `docs/PROJECT.md`
+
+- Improved the business background and project overview sections for clarity.
+- Reformatted the core features list to enhance readability.
+- Made grammatical corrections and ensured consistent terminology.
+- Updated the high-level connection view diagram for better visual representation.
+
+## Reason for Changes
+
+The changes were made to improve the documentation's readability, consistency, and professionalism. By correcting grammatical errors and enhancing formatting, the documentation becomes more accessible and easier to understand for all stakeholders.
+
+## Impact of Changes
+
+These changes do not affect the functionality of the project but significantly improve the quality of the documentation. Clearer documentation aids in better understanding and communication among team members and stakeholders.
+
+## Test Plan
+
+As these changes are documentation-related, no specific testing is required. However, a thorough review of the updated documents is recommended to ensure accuracy and clarity.
+
+## Additional Notes
+
+- No changes were made to the codebase; this PR is solely focused on documentation improvements.
+- Future updates should maintain the improved formatting and consistency standards established in this PR.
