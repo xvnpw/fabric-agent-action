@@ -1,6 +1,7 @@
 # Fabric Agent Action
 
 [![CI](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/xvnpw/fabric-agent-action/actions/workflows/ci.yaml)
+[![GitHub release](https://img.shields.io/github/release/xvnpw/fabric-agent-action.svg)](https://github.com/xvnpw/fabric-agent-action/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <div align="left"><img src="./images/logo.webp" alt="logo" width="200" height="200"/></div>
