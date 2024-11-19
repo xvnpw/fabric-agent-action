@@ -34,7 +34,7 @@ To add the Fabric Agent Action to your workflow, reference it in your workflow `
 
 ```yaml
 - name: Execute Fabric Agent Action
-  uses: xvnpw/fabric-agent-action@v0.0.30  # or docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.30 to avoid action rebuild on each run
+  uses: xvnpw/fabric-agent-action@v1  # or docker://ghcr.io/xvnpw/fabric-agent-action:v1 to avoid action rebuild on each run
   with:
     input_file: path/to/input.md
     output_file: path/to/output.md
@@ -170,7 +170,7 @@ jobs:
             return output;
 
       - name: Execute Fabric Patterns
-        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v0.0.30
+        uses: docker://ghcr.io/xvnpw/fabric-agent-action:v1
         with:
           input_file: "fabric_input.md"
           output_file: "fabric_output.md"
@@ -390,7 +390,7 @@ The application can be run anywhere from source or using Docker.
 **Using Docker:**
 
 ```bash
-docker run --rm -it -v $(pwd):/data -e INPUT_INPUT_FILE=/data/fabric_input.md -e INPUT_OUTPUT_FILE=/data/fabric_output.md ghcr.io/xvnpw/fabric-agent-action:v0.0.30
+docker run --rm -it -v $(pwd):/data -e INPUT_INPUT_FILE=/data/fabric_input.md -e INPUT_OUTPUT_FILE=/data/fabric_output.md ghcr.io/xvnpw/fabric-agent-action:v1
 ```
 
 **From Source:**

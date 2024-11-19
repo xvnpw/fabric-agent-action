@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fabric-agent-action"
-version = "v0.0.30"
+version = "v1"
 description = "A GitHub action that leverages fabric patterns through an agent-based approach"
 authors = ["xvnpw <17719543+xvnpw@users.noreply.github.com>"]
 license = "MIT"
