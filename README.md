@@ -208,7 +208,7 @@ In this workflow:
 | Run fabric patterns from issue comments using the [react agent](#react-agent-react) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/14), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react.yml) |
 | Automatically run the fabric [write_pull_request pattern](https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md) on pull requests | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/17), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-diff.yml) |
 | Run fabric patterns from issue comments using specialized [react issue agent](#react-issue-agent-react_issue) | [Issue](https://github.com/xvnpw/fabric-agent-action-examples/issues/13), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-issue-agent-react-issue.yml) |
-| Run fabric patterns from pull request comments using specialized [react pr agent](#react-pull-request-agent-react_pr) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/12), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-agent-react-pr.yaml) |
+| Run fabric patterns from pull request comments using specialized [react pr agent](#react-pull-request-agent-react_pr) | [Pull request](https://github.com/xvnpw/fabric-agent-action-examples/pull/17#issuecomment-2488106340), [workflow](https://github.com/xvnpw/fabric-agent-action-examples/blob/main/.github/workflows/fabric-pr-agent-react-pr.yaml) |
 
 ## Agent Types
 
