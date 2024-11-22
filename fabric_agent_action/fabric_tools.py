@@ -1182,7 +1182,7 @@ class FabricTools:
         return self.invoke_llm(input, "label_and_rate")
 
     def md_callout(self, input: str) -> str:
-        """Create a markdown callout using fabric pattern
+        """Fabric pattern tool that creates a markdown callout based on the provided text.
 
         Args:
             input: input text
@@ -1509,6 +1509,22 @@ class FabricTools:
         """
         return self.invoke_llm(input, "find_logical_fallacies")
 
+    def analyze_mistakes(self, input: str) -> str:
+        """Tool to analyze thinking patterns and anticipate mistakes, using a fabric pattern approach.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_mistakes")
+
+    def summarize_meeting(self, input: str) -> str:
+        """Tool for summarizing meeting transcripts into key sections in a structured format. This is a fabric pattern.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "summarize_meeting")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1695,4 +1711,6 @@ class FabricTools:
             self.write_pull_request,
             self.write_semgrep_rule,
             self.find_logical_fallacies,
+            self.analyze_mistakes,
+            self.summarize_meeting,
         ]
