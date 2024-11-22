@@ -99,6 +99,10 @@ Set one of the following API keys:
 
 This action is flexible in workflow integration and can be used on issues, pushes, pull requests, etc.
 
+```mermaid
+  info
+```
+
 ### Issue Comments - Created or Edited
 
 Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
