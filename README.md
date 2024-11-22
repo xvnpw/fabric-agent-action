@@ -100,7 +100,34 @@ Set one of the following API keys:
 This action is flexible in workflow integration and can be used on issues, pushes, pull requests, etc.
 
 ```mermaid
-  info
+zenuml
+    title Comment on Issue
+    @Actor User #FFEBE6
+    @Boundary GitHub #0747A6
+    @EC2 fabric_agent_action #E3FCEF
+    group Models {
+      @Lambda agent_model
+      @AzureFunction fabric_model
+    }
+
+    @Starter(User)
+    // write new comment
+    GitHub.comment_on_issue {
+        // input_file:
+        // INSTRUCTION
+        // GITHUB ISSUE
+        // ISSUE COMMENTS
+        prepare_input() {
+            return input_file
+        }
+        fabric_agent_action.process(input_file) {
+            answer = agent_model.think(input_file)
+            if(answer == tool) {
+                pattern_result = fabric_model.execute_pattern(input_file, tool)
+            }
+            return pattern_result
+        }
+    }
 ```
 
 ### Issue Comments - Created or Edited
