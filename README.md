@@ -4,9 +4,19 @@
 [![GitHub release](https://img.shields.io/github/release/xvnpw/fabric-agent-action.svg)](https://github.com/xvnpw/fabric-agent-action/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<div align="left"><img src="./images/logo.webp" alt="logo" width="200" height="200"/></div>
+<div align="center"><img src="./images/logo.webp" alt="logo" width="200" height="200"/></div>
 
 🤖 **Fabric Agent Action** is a GitHub Action that leverages [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows using an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it intelligently selects and executes patterns using Large Language Models (LLMs).
+
+<div align="center">
+
+**Demo:**
+  
+  <img src="./images/demo.gif" alt="demo" />
+
+  Watch full demo on [Loom](https://www.loom.com/share/a205012295de4b2b93e3ea2503763c8d?sid=c117b055-0bd6-41e4-84be-d5fc1b71f28d)
+  
+</div>
 
 ## Table of Contents
 - [Features](#features)
