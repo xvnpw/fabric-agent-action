@@ -10,7 +10,7 @@
 
 🤖 **Fabric Agent Action** is a GitHub Action that leverages [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows using an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it intelligently selects and executes patterns using Large Language Models (LLMs).
 
-**✨ Demo:**
+**🎥 Demo:**
   
 <img src="./images/demo.gif" alt="demo" />
 
