@@ -11,11 +11,11 @@
 🤖 **Fabric Agent Action** is a GitHub Action that leverages [Fabric Patterns](https://github.com/danielmiessler/fabric/tree/main/patterns) to automate complex workflows using an agent-based approach. Built with [LangGraph](https://www.langchain.com/langgraph), it intelligently selects and executes patterns using Large Language Models (LLMs).
 
 **🎥 Demo:**
-  
+
 <img src="./images/demo.gif" alt="demo" />
 
 ▶️ Watch full demo on [Loom](https://www.loom.com/share/a205012295de4b2b93e3ea2503763c8d?sid=c117b055-0bd6-41e4-84be-d5fc1b71f28d)
-  
+
 </div>
 
 ## Table of Contents
@@ -114,27 +114,27 @@ This action is flexible in workflow integration and can be used on issues, pushe
 ```mermaid
 flowchart TD
     Start([GitHub Issue Created]) --> Command["/fabric Command Detected"]
-    
+
     subgraph Process["AI Agent Processing"]
         Command --> ReadContext["Read Issue Context<br/>(title, body, comments)"]
         ReadContext --> Analyze["AI Analyzes Request"]
-        
-        Analyze --> ToolCheck{"Needs Tools?"}
-        
-        ToolCheck -->|Yes| UseTool["Use Tool<br/>(e.g., clean text)"]
-        UseTool --> CheckResult{"Check Result"}
-        
+
+        Analyze --> PatternCheck{"Needs Patterns?"}
+
+        PatternCheck -->|Yes| UsePattern["Use Pattern<br/>(e.g., clean_text)"]
+        UsePattern --> CheckResult{"Check Result"}
+
         CheckResult -->|"Need More"| Analyze
         CheckResult -->|"Done"| PrepareResponse["Prepare Response"]
     end
-    
+
     PrepareResponse --> Comment["Post GitHub Comment"]
     Comment --> End([Done])
-    
+
     style Start fill:#90EE90
     style End fill:#FFB6C1
     style Process fill:#F0F8FF
-    style ToolCheck fill:#FFE4B5
+    style PatternCheck fill:#FFE4B5
     style CheckResult fill:#FFE4B5
 ```
 
@@ -144,31 +144,31 @@ sequenceDiagram
     participant GI as GitHub Issue
     participant WF as GitHub Workflow
     participant A as AI Agent
-    participant T as Tools
+    participant T as Patterns
 
     U->>GI: Creates/Updates Issue
     U->>GI: Adds Command (/fabric)
     GI->>WF: Triggers Workflow
-    
+
     rect rgb(240, 240, 255)
         Note over WF,A: fabric-agent-action
         WF->>A: Passes Issue Context
-        
+
         loop Until Task Complete
             A->>A: Processes Current State
-            A->>T: Requests Tool Action #1
-            T-->>A: Returns Tool Result #1
-            
-            opt May Need Additional Tools
-                A->>T: Requests Tool Action #2
-                T-->>A: Returns Tool Result #2
+            A->>T: Requests Pattern Action #1
+            T-->>A: Returns Pattern Result #1
+
+            opt May Need Additional Patterns
+                A->>T: Requests Pattern Action #2
+                T-->>A: Returns Pattern Result #2
                 Note over A,T: Can continue based on results
             end
         end
-        
+
         A->>WF: Returns Final Response
     end
-    
+
     WF->>GI: Posts Comment
     GI-->>U: Notifies User
 ```
