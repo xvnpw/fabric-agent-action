@@ -111,6 +111,8 @@ This action is flexible in workflow integration and can be used on issues, pushe
 
 ### Issue Comments - Created or Edited
 
+Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
+
 ```mermaid
 flowchart TD
     Start([GitHub Issue Created]) --> Command["/fabric Command Detected"]
@@ -173,7 +175,7 @@ sequenceDiagram
     GI-->>U: Notifies User
 ```
 
-Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
+**Github Workflow:**
 
 ```yaml
 name: Fabric Pattern Processing using ReAct Issue Agent
