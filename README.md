@@ -111,7 +111,7 @@ This action is flexible in workflow integration and can be used on issues, pushe
 
 ### Issue Comments - Created or Edited
 
-Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
+Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments.
 
 **Flowchart:**
 
