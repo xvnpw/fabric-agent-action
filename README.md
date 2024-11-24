@@ -113,6 +113,8 @@ This action is flexible in workflow integration and can be used on issues, pushe
 
 Below is an example of how to integrate the Fabric Agent Action into a GitHub Actions workflow that reacts to issue comments:
 
+**Flowchart:**
+
 ```mermaid
 flowchart TD
     Start([GitHub Issue Created]) --> Command["/fabric Command Detected"]
@@ -139,6 +141,8 @@ flowchart TD
     style PatternCheck fill:#FFE4B5
     style CheckResult fill:#FFE4B5
 ```
+
+**Sequence Diagram:**
 
 ```mermaid
 sequenceDiagram
