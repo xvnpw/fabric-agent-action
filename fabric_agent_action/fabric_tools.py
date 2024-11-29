@@ -1525,6 +1525,14 @@ class FabricTools:
         """
         return self.invoke_llm(input, "summarize_meeting")
 
+    def extract_recipe(self, input: str) -> str:
+        """Tool to extract recipes from text using a fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_recipe")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1713,4 +1721,5 @@ class FabricTools:
             self.find_logical_fallacies,
             self.analyze_mistakes,
             self.summarize_meeting,
+            self.extract_recipe,
         ]
