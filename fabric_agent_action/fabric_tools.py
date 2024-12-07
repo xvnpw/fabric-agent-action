@@ -1533,6 +1533,14 @@ class FabricTools:
         """
         return self.invoke_llm(input, "extract_recipe")
 
+    def create_newsletter_entry(self, input: str) -> str:
+        """Fabric pattern tool to create a newsletter section in the style of Frontend Weekly.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_newsletter_entry")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1722,4 +1730,5 @@ class FabricTools:
             self.analyze_mistakes,
             self.summarize_meeting,
             self.extract_recipe,
+            self.create_newsletter_entry,
         ]
