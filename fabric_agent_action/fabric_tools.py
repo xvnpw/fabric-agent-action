@@ -1541,6 +1541,14 @@ class FabricTools:
         """
         return self.invoke_llm(input, "create_newsletter_entry")
 
+    def analyze_risk(self, input: str) -> str:
+        """Conduct a risk assessment of a third-party vendor as a fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_risk")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1731,4 +1739,5 @@ class FabricTools:
             self.summarize_meeting,
             self.extract_recipe,
             self.create_newsletter_entry,
+            self.analyze_risk,
         ]
