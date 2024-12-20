@@ -1549,6 +1549,14 @@ class FabricTools:
         """
         return self.invoke_llm(input, "analyze_risk")
 
+    def convert_to_markdown(self, input: str) -> str:
+        """Fabric pattern to convert content to Markdown format
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "convert_to_markdown")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1740,4 +1748,5 @@ class FabricTools:
             self.extract_recipe,
             self.create_newsletter_entry,
             self.analyze_risk,
+            self.convert_to_markdown,
         ]
