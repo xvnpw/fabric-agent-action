@@ -194,6 +194,11 @@ def llm():
         "create_newsletter_entry",
         "analyze_risk",
         "convert_to_markdown",
+        "create_prd",
+        "enrich_blog_post",
+        "humanize",
+        "judge_output",
+        "agility_story",
     ],
 )
 def test_read_fabric_patterns(llm, pattern_name):
@@ -218,8 +223,8 @@ def test_invoke_llm(llm):
     "included,excluded,tools_count",
     [
         ("create_stride_threat_model", "", 1),
-        ("", "", 182),
-        ("", "create_stride_threat_model", 181),
+        ("", "", 186),
+        ("", "create_stride_threat_model", 185),
     ],
 )
 def test_fabric_tools_filter(llm, included, excluded, tools_count):
@@ -231,10 +236,10 @@ def test_fabric_tools_filter(llm, included, excluded, tools_count):
 def test_fabric_tools_max_number_of_tools(llm):
     fabric_tools = FabricTools(llm)
     tools = fabric_tools.get_fabric_tools()
-    assert len(tools) == 182
+    assert len(tools) == 186
 
 
 def test_fabric_tools_max_number_of_tools_on_error(llm):
     fabric_tools = FabricTools(llm, max_number_of_tools=1)
-    with pytest.raises(ValueError, match="Model supporting only 1 tools, but got 182"):
+    with pytest.raises(ValueError, match="Model supporting only 1 tools, but got 186"):
         fabric_tools.get_fabric_tools()
