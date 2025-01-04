@@ -117,14 +117,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "ai")
 
-    def analyze_answers(self, input: str) -> str:
-        """Analyze answers for correctness using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "analyze_answers")
-
     def analyze_candidates(self, input: str) -> str:
         """Analyze and compare two running candidates using fabric pattern
 
@@ -213,14 +205,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "analyze_military_strategy")
 
-    def analyze_paper(self, input: str) -> str:
-        """Analyze research paper using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "analyze_paper")
-
     def analyze_patent(self, input: str) -> str:
         """Analyze patent using fabric pattern
 
@@ -261,14 +245,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "analyze_proposition")
 
-    def analyze_prose(self, input: str) -> str:
-        """Analyze and evaluate prose using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "analyze_prose")
-
     def analyze_prose_json(self, input: str) -> str:
         """Analyze prose input for novelty, clarity, and prose using fabric pattern
 
@@ -276,14 +252,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "analyze_prose_json")
-
-    def analyze_prose_pinker(self, input: str) -> str:
-        """Analyze prose based on Steven Pinker's book, The Sense of Style, using fabric pattern.
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "analyze_prose_pinker")
 
     def analyze_sales_call(self, input: str) -> str:
         """Analyze sales call transcripts using fabric pattern
@@ -340,14 +308,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "ask_secure_by_design_questions")
-
-    def ask_uncle_duke(self, input: str) -> str:
-        """Provide expert advice on software development using Java, Spring Framework, and Maven, following the fabric pattern.
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "ask_uncle_duke")
 
     def capture_thinkers_work(self, input: str) -> str:
         """Capture the work of thinkers using fabric pattern
@@ -429,22 +389,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "create_art_prompt")
 
-    def create_better_frame(self, input: str) -> str:
-        """Find better, positive mental frames for seeing the world using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "create_better_frame")
-
-    def create_coding_project(self, input: str) -> str:
-        """Create a coding project using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "create_coding_project")
-
     def create_command(self, input: str) -> str:
         """Generate CLI commands using fabric pattern
 
@@ -500,14 +444,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "create_graph_from_input")
-
-    def create_hormozi_offer(self, input: str) -> str:
-        """Create business offers using Alex Hormozi's $100M Offers concepts as a fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "create_hormozi_offer")
 
     def create_idea_compass(self, input: str) -> str:
         """Create a structured and interconnected system of thoughts and ideas using fabric pattern
@@ -604,14 +540,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "create_quiz")
-
-    def create_reading_plan(self, input: str) -> str:
-        """Create a reading plan based on the input using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "create_reading_plan")
 
     def create_recursive_outline(self, input: str) -> str:
         """Create a recursive outline using fabric pattern
@@ -749,14 +677,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "create_visualization")
 
-    def dialog_with_socrates(self, input: str) -> str:
-        """Engage in a deep, meaningful conversation using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "dialog_with_socrates")
-
     def explain_code(self, input: str) -> str:
         """Explain code, security output, or configuration text using fabric pattern
 
@@ -853,14 +773,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "extract_controversial_ideas")
 
-    def extract_core_message(self, input: str) -> str:
-        """Extract core message from a text using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_core_message")
-
     def extract_ctf_writeup(self, input: str) -> str:
         """Extract CTF writeup using fabric pattern
 
@@ -933,22 +845,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "extract_main_idea")
 
-    def extract_most_redeeming_thing(self, input: str) -> str:
-        """Extract the most redeeming thing from input using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_most_redeeming_thing")
-
-    def extract_patterns(self, input: str) -> str:
-        """Extract patterns from input data using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_patterns")
-
     def extract_poc(self, input: str) -> str:
         """Extract proof of concept URL and command from security/bug bounty report using fabric pattern
 
@@ -957,22 +853,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "extract_poc")
 
-    def extract_predictions(self, input: str) -> str:
-        """Extract predictions from input text using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_predictions")
-
-    def extract_primary_problem(self, input: str) -> str:
-        """Extract the primary problem from a text or body of work using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_primary_problem")
-
     def extract_primary_solution(self, input: str) -> str:
         """Extract primary solution from the input text using fabric pattern
 
@@ -980,14 +860,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "extract_primary_solution")
-
-    def extract_product_features(self, input: str) -> str:
-        """Extract product features from input text using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_product_features")
 
     def extract_questions(self, input: str) -> str:
         """Extract questions asked by an interviewer using fabric pattern
@@ -1004,14 +876,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "extract_recommendations")
-
-    def extract_references(self, input: str) -> str:
-        """Extract references to art, stories, books, literature, papers, and other sources using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_references")
 
     def extract_skills(self, input: str) -> str:
         """Extract skills from job description using fabric pattern
@@ -1060,22 +924,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "extract_wisdom_agents")
-
-    def extract_wisdom_dm(self, input: str) -> str:
-        """Extract insightful and thought-provoking information from input using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_wisdom_dm")
-
-    def extract_wisdom_nometa(self, input: str) -> str:
-        """Extract surprising, insightful, and interesting information from input text using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "extract_wisdom_nometa")
 
     def find_hidden_message(self, input: str) -> str:
         """Find hidden political messages in input text using fabric pattern
@@ -1309,22 +1157,6 @@ class FabricTools:
         """
         return self.invoke_llm(input, "solve_with_cot")
 
-    def suggest_pattern(self, input: str) -> str:
-        """Suggest appropriate fabric patterns or commands based on user input using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "suggest_pattern")
-
-    def summarize(self, input: str) -> str:
-        """Summarize input content using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "summarize")
-
     def summarize_debate(self, input: str) -> str:
         """Summarize debate discussions using fabric pattern
 
@@ -1372,22 +1204,6 @@ class FabricTools:
             input: input text
         """
         return self.invoke_llm(input, "summarize_micro")
-
-    def summarize_newsletter(self, input: str) -> str:
-        """Summarize input newsletter content using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "summarize_newsletter")
-
-    def summarize_paper(self, input: str) -> str:
-        """Summarize academic paper using fabric pattern
-
-        Args:
-            input: input text
-        """
-        return self.invoke_llm(input, "summarize_paper")
 
     def summarize_prompt(self, input: str) -> str:
         """Summarize AI chat prompts using fabric pattern
@@ -1557,6 +1373,224 @@ class FabricTools:
         """
         return self.invoke_llm(input, "convert_to_markdown")
 
+    def summarize_paper(self, input: str) -> str:
+        """Conduct paper summarization on the full paper text provided by the user as a fabric pattern.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "summarize_paper")
+
+    def create_hormozi_offer(self, input: str) -> str:
+        """Create Hormozi Offer tool is a fabric pattern for designing business offers based on Alex Hormozi's concepts
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_hormozi_offer")
+
+    def extract_most_redeeming_thing(self, input: str) -> str:
+        """Fabric pattern tool to extract the most redeeming thing about an input.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_most_redeeming_thing")
+
+    def suggest_pattern(self, input: str) -> str:
+        """Fabric pattern tool for suggesting appropriate fabric patterns or commands
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "suggest_pattern")
+
+    def extract_primary_problem(self, input: str) -> str:
+        """Fabric pattern tool that extracts the primary problem with the world from a given text.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_primary_problem")
+
+    def summarize(self, input: str) -> str:
+        """Fabric pattern tool to summarize content into a Markdown formatted summary.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "summarize")
+
+    def extract_wisdom_nometa(self, input: str) -> str:
+        """Extract surprising, insightful, and interesting information from text content using a fabric pattern.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_wisdom_nometa")
+
+    def extract_predictions(self, input: str) -> str:
+        """Tool to extract predictions from text using a fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_predictions")
+
+    def extract_product_features(self, input: str) -> str:
+        """Fabric pattern tool to extract the list of product features from the input.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_product_features")
+
+    def extract_core_message(self, input: str) -> str:
+        """Fabric pattern tool for extracting the core message from a given text or body of work.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_core_message")
+
+    def dialog_with_socrates(self, input: str) -> str:
+        """Fabric pattern tool for engaging in Socratic dialogue
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "dialog_with_socrates")
+
+    def enrich_blog_post(self, input: str) -> str:
+        """Enrich blog post using fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "enrich_blog_post")
+
+    def analyze_prose_pinker(self, input: str) -> str:
+        """Fabric pattern tool for analyzing prose based on Steven Pinker's The Sense of Style
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_prose_pinker")
+
+    def analyze_paper(self, input: str) -> str:
+        """Research paper analysis fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_paper")
+
+    def ask_uncle_duke(self, input: str) -> str:
+        """This tool is a fabric pattern that utilizes Uncle Duke, an advanced AI system, to provide answers about software development, especially Java, Spring Framework, and Maven.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "ask_uncle_duke")
+
+    def extract_references(self, input: str) -> str:
+        """Extracts references to art, stories, books, literature, papers, and other sources of learning from content using a fabric pattern.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_references")
+
+    def analyze_answers(self, input: str) -> str:
+        """Tool to evaluate and analyze student answers in a fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_answers")
+
+    def analyze_prose(self, input: str) -> str:
+        """Analyze prose for novelty, clarity, and messaging as a fabric pattern.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "analyze_prose")
+
+    def humanize(self, input: str) -> str:
+        """Fabric pattern tool that rewrites text to sound natural and conversational
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "humanize")
+
+    def create_reading_plan(self, input: str) -> str:
+        """Tool that designs a perfect three-phase reading plan as a fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_reading_plan")
+
+    def create_better_frame(self, input: str) -> str:
+        """Expert tool for finding better, positive mental frames - fabric pattern
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_better_frame")
+
+    def create_coding_project(self, input: str) -> str:
+        """Fabric pattern tool that generates a comprehensive coding project outline and code structure
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_coding_project")
+
+    def summarize_newsletter(self, input: str) -> str:
+        """Fabric pattern to extract and summarize the most meaningful content from a newsletter.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "summarize_newsletter")
+
+    def extract_patterns(self, input: str) -> str:
+        """Extract interesting and surprising patterns from input data using a fabric pattern approach.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_patterns")
+
+    def judge_output(self, input: str) -> str:
+        """This tool is a fabric pattern that acts as a Honeycomb query evaluator with advanced capabilities
+        to judge if a query is good or not. It understands the nuances of the Honeycomb query language,
+        including what is likely to be most useful from an analytics perspective.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "judge_output")
+
+    def extract_wisdom_dm(self, input: str) -> str:
+        """Fabric pattern for extracting valuable insights and information
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "extract_wisdom_dm")
+
+    def create_prd(self, input: str) -> str:
+        """This is a fabric pattern tool for creating precise and accurate PRDs (Product Requirement Documents) from the input provided. The PRD is structured based on the input and formatted in Markdown.
+
+        Args:
+            input: input text
+        """
+        return self.invoke_llm(input, "create_prd")
+
     def get_fabric_tools(self) -> list[Callable[[str], str]]:
         filtered_tools = self.tools_filter.get_fabric_tools_list(self._get_fabric_tools())
         if len(filtered_tools) > self.max_number_of_tools:
@@ -1567,6 +1601,10 @@ class FabricTools:
 
     def _get_fabric_tools(self) -> list[Callable[[str], str]]:
         return [
+            self.create_prd,
+            self.enrich_blog_post,
+            self.humanize,
+            self.judge_output,
             self.agility_story,
             self.ai,
             self.analyze_answers,
